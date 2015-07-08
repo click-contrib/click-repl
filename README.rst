@@ -32,5 +32,6 @@ Features not shown:
 * The parent context is reused, which means ``ctx.obj`` persists between
   subcommands. If you're keeping caches on that object (like I do), using the
   app's repl instead of the shell is a huge performance win.
+* ``!``-prefix executes shell commands.
 
 .. _click: http://click.pocoo.org/

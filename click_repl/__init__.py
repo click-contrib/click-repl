@@ -1,9 +1,10 @@
 from prompt_toolkit.completion import Completer, Completion
-from prompt_toolkit.shortcuts import get_input
 from prompt_toolkit.history import History
+from prompt_toolkit.shortcuts import get_input
 import click
 import click._bashcomplete
 import click.parser
+import os
 import shlex
 import sys
 
@@ -72,6 +73,9 @@ def register_repl(group, name='repl'):
                 else:
                     break
 
+            if dispatch_repl_commands(command):
+                continue
+
             args = shlex.split(command)
 
             try:
@@ -82,3 +86,11 @@ def register_repl(group, name='repl'):
                 e.show()
             except SystemExit:
                 pass
+
+
+def dispatch_repl_commands(command):
+    if command.startswith('!'):
+        os.system(command[1:])
+        return True
+
+    return False
