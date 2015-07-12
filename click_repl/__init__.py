@@ -66,7 +66,11 @@ def register_repl(group, name='repl'):
             get_command = sys.stdin.readline
 
         while True:
-            command = get_command()
+            try:
+                command = get_command()
+            except KeyboardInterrupt:
+                continue
+
             if not command:
                 if isatty:
                     continue
