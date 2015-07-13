@@ -14,7 +14,12 @@ class ClickCompleter(Completer):
 
     def get_completions(self, document, complete_event):
         # Code analogous to click._bashcomplete.do_complete
-        args = shlex.split(document.text_before_cursor)
+        try:
+            args = shlex.split(document.text_before_cursor)
+        except ValueError:
+            # Invalid command, perhaps caused by missing closing quotation.
+            return
+
         incomplete = args.pop()
 
         ctx = click._bashcomplete.resolve_ctx(self.cli, '', args)
