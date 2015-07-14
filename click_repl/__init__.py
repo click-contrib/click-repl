@@ -75,6 +75,8 @@ def register_repl(group, name='repl'):
                 command = get_command()
             except KeyboardInterrupt:
                 continue
+            except EOFError:
+                break
 
             if not command:
                 if isatty:
