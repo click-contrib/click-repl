@@ -20,7 +20,7 @@ class ClickCompleter(Completer):
             # Invalid command, perhaps caused by missing closing quotation.
             return
 
-        incomplete = args.pop()
+        incomplete = args.pop() if args else ''
 
         ctx = click._bashcomplete.resolve_ctx(self.cli, '', args)
         if ctx is None:
