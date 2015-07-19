@@ -2,6 +2,8 @@
 click-repl
 ==========
 
+**This is experimental, which is why it's not on PyPI**
+
 In your click_ app::
 
     import click
@@ -35,3 +37,8 @@ Features not shown:
 * ``!``-prefix executes shell commands.
 
 .. _click: http://click.pocoo.org/
+
+License
+=======
+
+Licensed under the MIT, see ``LICENSE``.
