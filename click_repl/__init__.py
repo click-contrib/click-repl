@@ -66,7 +66,7 @@ def register_repl(group, name='repl'):
             history = InMemoryHistory()
             completer = ClickCompleter(group)
             def get_command():
-                return prompt('> ', completer=completer, history=history)
+                return prompt(u'> ', completer=completer, history=history)
         else:
             get_command = sys.stdin.readline
 
