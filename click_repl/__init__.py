@@ -1,6 +1,6 @@
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.history import InMemoryHistory
-from prompt_toolkit.shortcuts import get_input
+from prompt_toolkit.shortcuts import prompt
 import click
 import click._bashcomplete
 import click.parser
@@ -66,7 +66,7 @@ def register_repl(group, name='repl'):
             history = InMemoryHistory()
             completer = ClickCompleter(group)
             def get_command():
-                return get_input('> ', completer=completer, history=history)
+                return prompt('> ', completer=completer, history=history)
         else:
             get_command = sys.stdin.readline
 
