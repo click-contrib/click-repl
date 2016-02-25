@@ -1,12 +1,13 @@
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.history import InMemoryHistory
-from prompt_toolkit.shortcuts import get_input
+from prompt_toolkit.shortcuts import prompt
 import click
 import click._bashcomplete
 import click.parser
 import os
 import shlex
 import sys
+
 
 class ClickCompleter(Completer):
     def __init__(self, cli):
@@ -53,11 +54,11 @@ def register_repl(group, name='repl'):
     @group.command(name=name)
     @click.pass_context
     def cli(old_ctx):
-        '''
+        """
         Start an interactive shell. All subcommands are available in it.
 
         You can also pipe to this command to execute subcommands.
-        '''
+        """
 
         # parent should be available, but we're not going to bother if not
         group_ctx = old_ctx.parent or old_ctx
@@ -65,8 +66,9 @@ def register_repl(group, name='repl'):
         if isatty:
             history = InMemoryHistory()
             completer = ClickCompleter(group)
+
             def get_command():
-                return get_input('> ', completer=completer, history=history)
+                return prompt(u'> ', completer=completer, history=history)
         else:
             get_command = sys.stdin.readline
 
