@@ -8,6 +8,7 @@ import os
 import shlex
 import sys
 
+
 class ClickCompleter(Completer):
     def __init__(self, cli):
         self.cli = cli
@@ -53,11 +54,11 @@ def register_repl(group, name='repl'):
     @group.command(name=name)
     @click.pass_context
     def cli(old_ctx):
-        '''
+        """
         Start an interactive shell. All subcommands are available in it.
 
         You can also pipe to this command to execute subcommands.
-        '''
+        """
 
         # parent should be available, but we're not going to bother if not
         group_ctx = old_ctx.parent or old_ctx
@@ -65,6 +66,7 @@ def register_repl(group, name='repl'):
         if isatty:
             history = InMemoryHistory()
             completer = ClickCompleter(group)
+
             def get_command():
                 return prompt(u'> ', completer=completer, history=history)
         else:
