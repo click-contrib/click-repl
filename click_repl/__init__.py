@@ -16,7 +16,6 @@ _internal_commands = dict()
 
 def _register_internal_command(names, target, description=None):
     assert hasattr(target, '__call__'), 'internal command must be a callable'
-    global _internal_commands
     if isinstance(names, six.string_types):
         names = [names]
     elif not isinstance(names, (list, tuple)):
