@@ -9,7 +9,7 @@ import os
 import shlex
 import sys
 import six
-from .exceptions import InternalCommandException, ExitReplException
+from .exceptions import InternalCommandException, ExitReplException  # noqa
 
 _internal_commands = dict()
 
@@ -46,13 +46,18 @@ def _help_internal():
         info_table = defaultdict(list)
         for mnemonic, target_info in six.iteritems(_internal_commands):
             info_table[target_info[1]].append(mnemonic)
-        formatter.write_dl([(', '.join((':{0}'.format(mnemonic) for mnemonic in sorted(mnemonics))), description)
-                            for description, mnemonics in six.iteritems(info_table)])
+        formatter.write_dl(
+            (', '.join((':{0}'.format(mnemonic)
+                        for mnemonic in sorted(mnemonics))), description)
+            for description, mnemonics in six.iteritems(info_table)
+        )
     return formatter.getvalue()
 
 
-_register_internal_command(['q', 'quit', 'exit'], _exit_internal, 'exits the repl')
-_register_internal_command(['?', 'h', 'help'], _help_internal, 'displays general help information')
+_register_internal_command(['q', 'quit', 'exit'], _exit_internal,
+                           'exits the repl')
+_register_internal_command(['?', 'h', 'help'], _help_internal,
+                           'displays general help information')
 
 
 class ClickCompleter(Completer):
