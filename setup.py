@@ -14,5 +14,6 @@ setup(
     install_requires=[
         'click',
         'prompt_toolkit',
+        'six',
     ],
 )
