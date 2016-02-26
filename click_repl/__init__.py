@@ -1,3 +1,4 @@
+from collections import defaultdict
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.shortcuts import prompt
@@ -7,6 +8,51 @@ import click.parser
 import os
 import shlex
 import sys
+import six
+from .exceptions import InternalCommandException, ExitReplException
+
+_internal_commands = dict()
+
+
+def _register_internal_command(names, target, description=None):
+    assert hasattr(target, '__call__'), 'internal command must be a callable'
+    if isinstance(names, six.string_types):
+        names = [names]
+    elif not isinstance(names, (list, tuple)):
+        raise ValueError('"names" must be a string or a list / tuple')
+    for name in names:
+        _internal_commands[name] = (target, description)
+
+
+def _get_registered_target(name, default=None):
+    target_info = _internal_commands.get(name)
+    if target_info:
+        return target_info[0]
+    return default
+
+
+def _exit_internal():
+    raise ExitReplException()
+
+
+def _help_internal():
+    formatter = click.HelpFormatter()
+    formatter.write_heading('Internal repl help')
+    formatter.indent()
+    with formatter.section('External Commands'):
+        formatter.write_text('prefix external commands with "!"')
+    with formatter.section('Internal Commands'):
+        formatter.write_text('prefix internal commands with ":"')
+        info_table = defaultdict(list)
+        for mnemonic, target_info in _internal_commands.iteritems():
+            info_table[target_info[1]].append(mnemonic)
+        formatter.write_dl([(', '.join((':{0}'.format(mnemonic) for mnemonic in sorted(mnemonics))), description)
+                            for description, mnemonics in info_table.iteritems()])
+    return formatter.getvalue()
+
+
+_register_internal_command(['q', 'quit', 'exit'], _exit_internal, 'exits the repl')
+_register_internal_command(['?', 'h', 'help'], _help_internal, 'displays general help information')
 
 
 class ClickCompleter(Completer):
@@ -89,6 +135,14 @@ def register_repl(group, name='repl'):
             if dispatch_repl_commands(command):
                 continue
 
+            try:
+                result = handle_internal_commands(command)
+                if isinstance(result, six.string_types):
+                    click.echo(result)
+                    continue
+            except ExitReplException:
+                break
+
             args = shlex.split(command)
 
             try:
@@ -107,3 +161,10 @@ def dispatch_repl_commands(command):
         return True
 
     return False
+
+
+def handle_internal_commands(command):
+    if command.startswith(':'):
+        target = _get_registered_target(command[1:], default=None)
+        if target:
+            return target()
