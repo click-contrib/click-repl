@@ -142,4 +142,6 @@ def handle_internal_commands(command):
     if command.startswith(':'):
         target = __internal_commands__.get(command[1:])
         if target:
-            target()
+            result = target()
+            if isinstance(result, six.string_types):
+                click.echo(result)
