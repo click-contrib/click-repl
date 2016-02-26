@@ -42,6 +42,7 @@ def _help_internal():
     global __internal_commands__
     formatter = click.HelpFormatter()
     formatter.write_heading('Internal repl help')
+    formatter.indent()
     with formatter.section('External Commands'):
         formatter.write_text('prefix external commands with "!"')
     with formatter.section('Internal Commands'):
