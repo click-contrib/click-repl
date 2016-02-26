@@ -25,7 +25,6 @@ def _register_internal_command(names, target, description=None):
 
 
 def _get_registered_target(name, default=None):
-    global _internal_commands
     target_info = _internal_commands.get(name)
     if target_info:
         return target_info[0]
@@ -37,7 +36,6 @@ def _exit_internal():
 
 
 def _help_internal():
-    global _internal_commands
     formatter = click.HelpFormatter()
     formatter.write_heading('Internal repl help')
     formatter.indent()
