@@ -44,10 +44,10 @@ def _help_internal():
     with formatter.section('Internal Commands'):
         formatter.write_text('prefix internal commands with ":"')
         info_table = defaultdict(list)
-        for mnemonic, target_info in _internal_commands.iteritems():
+        for mnemonic, target_info in six.iteritems(_internal_commands):
             info_table[target_info[1]].append(mnemonic)
         formatter.write_dl([(', '.join((':{0}'.format(mnemonic) for mnemonic in sorted(mnemonics))), description)
-                            for description, mnemonics in info_table.iteritems()])
+                            for description, mnemonics in six.iteritems(info_table)])
     return formatter.getvalue()
 
 
