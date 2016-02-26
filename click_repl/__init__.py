@@ -1,5 +1,4 @@
 from collections import defaultdict
-
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.shortcuts import prompt
@@ -12,23 +11,23 @@ import sys
 import six
 from .exceptions import InternalCommandException, ExitReplException
 
-__internal_commands__ = dict()
+_internal_commands = dict()
 
 
 def _register_internal_command(names, target, description=None):
     assert hasattr(target, '__call__'), 'internal command must be a callable'
-    global __internal_commands__
+    global _internal_commands
     if isinstance(names, six.string_types):
         names = [names]
     elif not isinstance(names, (list, tuple)):
         raise ValueError('"names" must be a string or a list / tuple')
     for name in names:
-        __internal_commands__[name] = (target, description)
+        _internal_commands[name] = (target, description)
 
 
 def _get_registered_target(name, default=None):
-    global __internal_commands__
-    target_info = __internal_commands__.get(name)
+    global _internal_commands
+    target_info = _internal_commands.get(name)
     if target_info:
         return target_info[0]
     return default
@@ -39,7 +38,7 @@ def _exit_internal():
 
 
 def _help_internal():
-    global __internal_commands__
+    global _internal_commands
     formatter = click.HelpFormatter()
     formatter.write_heading('Internal repl help')
     formatter.indent()
@@ -48,7 +47,7 @@ def _help_internal():
     with formatter.section('Internal Commands'):
         formatter.write_text('prefix internal commands with ":"')
         info_table = defaultdict(list)
-        for mnemonic, target_info in __internal_commands__.iteritems():
+        for mnemonic, target_info in _internal_commands.iteritems():
             info_table[target_info[1]].append(mnemonic)
         formatter.write_dl([(', '.join((':{0}'.format(mnemonic) for mnemonic in sorted(mnemonics))), description)
                             for description, mnemonics in info_table.iteritems()])
