@@ -7,6 +7,28 @@ import click.parser
 import os
 import shlex
 import sys
+import six
+from .exceptions import InternalCommandException, ExitReplException
+
+__internal_commands__ = dict()
+
+
+def _register_internal_command(names, target):
+    assert hasattr(target, '__call__'), 'internal command must be a callable'
+    global __internal_commands__
+    if isinstance(names, six.string_types):
+        names = [names]
+    elif not isinstance(names, (list, tuple)):
+        raise ValueError('"names" must be a string or a list / tuple')
+    for name in names:
+        __internal_commands__[name] = target
+
+
+def _exit_internal():
+    raise ExitReplException()
+
+
+_register_internal_command(['q', 'quit', 'exit'], _exit_internal)
 
 
 class ClickCompleter(Completer):
@@ -89,6 +111,12 @@ def register_repl(group, name='repl'):
             if dispatch_repl_commands(command):
                 continue
 
+            try:
+                global __internal_commands__
+                handle_internal_commands(command)
+            except ExitReplException:
+                break
+
             args = shlex.split(command)
 
             try:
@@ -107,3 +135,11 @@ def dispatch_repl_commands(command):
         return True
 
     return False
+
+
+def handle_internal_commands(command):
+    global __internal_commands__
+    if command.startswith(':'):
+        target = __internal_commands__.get(command[1:])
+        if target:
+            target()
