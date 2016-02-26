@@ -2,6 +2,9 @@
 click-repl
 ==========
 
+.. image:: https://travis-ci.org/click-contrib/click-repl.svg?branch=master
+    :target: https://travis-ci.org/click-contrib/click-repl
+
 **This is experimental, which is why it's not on PyPI**
 
 In your click_ app::
