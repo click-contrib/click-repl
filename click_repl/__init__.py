@@ -65,7 +65,12 @@ class ClickCompleter(Completer):
         self.cli = cli
 
     def get_completions(self, document, complete_event):
+        # If ends in space, no completions are wished
+        if document.text_before_cursor.rstrip() != document.text_before_cursor:
+            return
+
         # Code analogous to click._bashcomplete.do_complete
+
         try:
             args = shlex.split(document.text_before_cursor)
         except ValueError:
