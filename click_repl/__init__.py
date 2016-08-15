@@ -109,11 +109,16 @@ class ClickCompleter(Completer):
                 yield item
 
 
-def repl(old_ctx):
+def repl(old_ctx, **prompt_kwargs):
     """
     Start an interactive shell. All subcommands are available in it.
 
-    You can also pipe to this command to execute subcommands.
+    :param old_ctx: The current Click context.
+    :param prompt_kwargs: Parameters passed to
+        :py:func:`prompt_toolkit.shortcuts.prompt`.
+
+    If stdin is not a TTY, no prompt will be printed, but only commands read
+    from stdin.
 
     """
     # parent should be available, but we're not going to bother if not
@@ -121,11 +126,15 @@ def repl(old_ctx):
     group = group_ctx.command
     isatty = sys.stdin.isatty()
     if isatty:
-        history = InMemoryHistory()
-        completer = ClickCompleter(group)
+        message = prompt_kwargs.setdefault('message', u'> ')
+        history = prompt_kwargs.pop('history', None) \
+            or InMemoryHistory()
+        completer = prompt_kwargs.pop('completer', None) \
+            or ClickCompleter(group)
 
         def get_command():
-            return prompt(u'> ', completer=completer, history=history)
+            return prompt(completer=completer, history=history,
+                          **prompt_kwargs)
     else:
         get_command = sys.stdin.readline
 
