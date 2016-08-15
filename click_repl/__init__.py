@@ -126,7 +126,7 @@ def repl(old_ctx, **prompt_kwargs):
     group = group_ctx.command
     isatty = sys.stdin.isatty()
     if isatty:
-        message = prompt_kwargs.setdefault('message', u'> ')
+        prompt_kwargs.setdefault('message', u'> ')
         history = prompt_kwargs.pop('history', None) \
             or InMemoryHistory()
         completer = prompt_kwargs.pop('completer', None) \
