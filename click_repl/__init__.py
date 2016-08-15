@@ -109,7 +109,7 @@ class ClickCompleter(Completer):
                 yield item
 
 
-def repl(old_ctx, **prompt_kwargs):
+def repl(old_ctx, prompt_kwargs=None):
     """
     Start an interactive shell. All subcommands are available in it.
 
@@ -125,7 +125,9 @@ def repl(old_ctx, **prompt_kwargs):
     group_ctx = old_ctx.parent or old_ctx
     group = group_ctx.command
     isatty = sys.stdin.isatty()
+
     if isatty:
+        prompt_kwargs = prompt_kwargs or {}
         prompt_kwargs.setdefault('message', u'> ')
         history = prompt_kwargs.pop('history', None) \
             or InMemoryHistory()
