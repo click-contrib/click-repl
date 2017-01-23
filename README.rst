@@ -5,8 +5,6 @@ click-repl
 .. image:: https://travis-ci.org/click-contrib/click-repl.svg?branch=master
     :target: https://travis-ci.org/click-contrib/click-repl
 
-**This is experimental, which is why it's not on PyPI**
-
 In your click_ app::
 
     import click
@@ -41,6 +39,8 @@ Features not shown:
 * ``!``-prefix executes shell commands.
 
 You can use the internal ``:help`` command to explain usage.
+
+PyPI: `<https://pypi.python.org/pypi/click-repl>`_
 
 .. _click: http://click.pocoo.org/
 

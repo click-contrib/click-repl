@@ -11,6 +11,9 @@ import sys
 import six
 from .exceptions import InternalCommandException, ExitReplException  # noqa
 
+
+__version__ = '0.1.0'
+
 _internal_commands = dict()
 
 
@@ -68,10 +71,6 @@ class ClickCompleter(Completer):
         self.cli = cli
 
     def get_completions(self, document, complete_event=None):
-        # If ends in space, no completions are wished
-        if document.text_before_cursor.rstrip() != document.text_before_cursor:
-            return
-
         # Code analogous to click._bashcomplete.do_complete
 
         try:
@@ -80,7 +79,17 @@ class ClickCompleter(Completer):
             # Invalid command, perhaps caused by missing closing quotation.
             return
 
-        incomplete = args.pop() if args else ''
+        cursor_within_command = \
+            document.text_before_cursor.rstrip() == document.text_before_cursor
+
+        if args and cursor_within_command:
+            # We've entered some text and no space, give completions for the
+            # current word.
+            incomplete = args.pop()
+        else:
+            # We've not entered anything, either at all or for the current
+            # command, so give all relevant completions for this context.
+            incomplete = ''
 
         ctx = click._bashcomplete.resolve_ctx(self.cli, '', args)
         if ctx is None:

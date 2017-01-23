@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 
+import ast
+import re
 from setuptools import setup
+
+
+_version_re = re.compile(r'__version__\s+=\s+(.*)')
+
+
+with open('click_repl/__init__.py', 'rb') as f:
+    version = str(ast.literal_eval(_version_re.search(
+        f.read().decode('utf-8')).group(1)))
+
 
 setup(
     name='click-repl',
-    version='0.1',
+    version=version,
     description='REPL plugin for Click',
     author='Markus Unterwaditzer',
     author_email='markus@unterwaditzer.net',
