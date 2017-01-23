@@ -4,6 +4,13 @@ python:
     - "pypy"
     - "3.3"
     - "3.4"
+    - "3.5"
+    - "3.6"
+
+matrix:
+    env:
+        - BUILD=test
+        - BUILD=style
 
 install: pip install tox
-script: tox
+script: tox -e py-$BUILD

@@ -67,7 +67,7 @@ class ClickCompleter(Completer):
     def __init__(self, cli):
         self.cli = cli
 
-    def get_completions(self, document, complete_event):
+    def get_completions(self, document, complete_event=None):
         # If ends in space, no completions are wished
         if document.text_before_cursor.rstrip() != document.text_before_cursor:
             return
