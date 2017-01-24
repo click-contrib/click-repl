@@ -118,7 +118,12 @@ class ClickCompleter(Completer):
                 yield item
 
 
-def repl(old_ctx, prompt_kwargs=None):
+def repl(
+        old_ctx,
+        prompt_kwargs=None,
+        allow_system_commands=True,
+        allow_internal_commands=True
+):
     """
     Start an interactive shell. All subcommands are available in it.
 
@@ -163,16 +168,17 @@ def repl(old_ctx, prompt_kwargs=None):
             else:
                 break
 
-        if dispatch_repl_commands(command):
+        if allow_system_commands and dispatch_repl_commands(command):
             continue
 
-        try:
-            result = handle_internal_commands(command)
-            if isinstance(result, six.string_types):
-                click.echo(result)
-                continue
-        except ExitReplException:
-            break
+        if allow_internal_commands:
+            try:
+                result = handle_internal_commands(command)
+                if isinstance(result, six.string_types):
+                    click.echo(result)
+                    continue
+            except ExitReplException:
+                break
 
         args = shlex.split(command)
 
