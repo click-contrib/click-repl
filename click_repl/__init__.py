@@ -140,6 +140,13 @@ def repl(
     group = group_ctx.command
     isatty = sys.stdin.isatty()
 
+    # Delete the REPL command from those available, as we don't want to allow
+    # nesting REPLs (note: pass `None` to `pop` as we don't want to error if
+    # REPL command already not present for some reason).
+    repl_command_name = old_ctx.command.name
+    available_commands = group_ctx.command.commands
+    available_commands.pop(repl_command_name, None)
+
     if isatty:
         prompt_kwargs = prompt_kwargs or {}
         prompt_kwargs.setdefault('message', u'> ')
