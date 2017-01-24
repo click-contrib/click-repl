@@ -5,7 +5,9 @@ click-repl
 .. image:: https://travis-ci.org/click-contrib/click-repl.svg?branch=master
     :target: https://travis-ci.org/click-contrib/click-repl
 
-In your click_ app::
+In your click_ app:
+
+.. code:: python
 
     import click
     from click_repl import register_repl
