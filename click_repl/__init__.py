@@ -85,37 +85,66 @@ class ClickCompleter(Completer):
         if args and cursor_within_command:
             # We've entered some text and no space, give completions for the
             # current word.
-            incomplete = args.pop()
+            incompletes = [args.pop()]
         else:
             # We've not entered anything, either at all or for the current
-            # command, so give all relevant completions for this context.
-            incomplete = ''
+            # command, so give all relevant completions for this context. Note
+            # that `click._bashcomplete.get_choices` will not return option
+            # completions when `incomplete` is an empty string, so we
+            # explicitly pass both an empty string and '-' to get all possible
+            # completions.
+            incompletes = ['', '-']
 
         ctx = click._bashcomplete.resolve_ctx(self.cli, '', args)
         if ctx is None:
             return
 
-        choices = []
+        # For available options, create map from option names to the associated
+        # `click.Option`.
+        options_map = {}
         for param in ctx.command.params:
             if not isinstance(param, click.Option):
                 continue
             for options in (param.opts, param.secondary_opts):
                 for o in options:
-                    choices.append(Completion(o, -len(incomplete),
-                                              display_meta=param.help))
+                    options_map[o] = param
 
+        # For available commands, create map from command names to the
+        # associated `click.Command`.
+        commands_map = {}
         if isinstance(ctx.command, click.MultiCommand):
             for name in ctx.command.list_commands(ctx):
-                command = ctx.command.get_command(ctx, name)
-                choices.append(Completion(
-                    name,
-                    -len(incomplete),
-                    display_meta=getattr(command, 'short_help')
-                ))
+                commands_map[name] = ctx.command.get_command(ctx, name)
 
-        for item in choices:
-            if item.text.startswith(incomplete):
-                yield item
+        completions = []
+        for incomplete in incompletes:
+            click_completions = \
+                click._bashcomplete.get_choices(self.cli, '', args, incomplete)
+            for completion_text in click_completions:
+                start_pos = -len(incomplete) if cursor_within_command else 0
+
+                # If this completion is for an option or command, get the
+                # corresponding Option/Command object so we can display the
+                # help alongside the completion.
+                corresponding_option = options_map.get(completion_text)
+                corresponding_command = commands_map.get(completion_text)
+                if corresponding_option:
+                    completion_meta = corresponding_option.help
+                elif corresponding_command:
+                    completion_meta = corresponding_command.short_help
+                else:
+                    completion_meta = None
+
+                completion = Completion(
+                    completion_text,
+                    start_pos,
+                    display_meta=completion_meta
+                )
+
+                completions.append(completion)
+
+        for item in completions:
+            yield item
 
 
 def repl(
