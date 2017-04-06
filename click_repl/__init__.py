@@ -100,14 +100,22 @@ class ClickCompleter(Completer):
             return
 
         # For available options, create map from option names to the associated
-        # `click.Option`.
-        options_map = {}
+        # `click.Option` and whether this option should be shown.
+        options_map = defaultdict(lambda: (None, False))
         for param in ctx.command.params:
             if not isinstance(param, click.Option):
                 continue
             for options in (param.opts, param.secondary_opts):
-                for o in options:
-                    options_map[o] = param
+                just_short_opts = all([is_short_opt(o) for o in options])
+                for option in options:
+
+                    # If option has both short and long versions, we just show
+                    # the long version(s) to avoid cluttering the completions
+                    # with the same option many times in different forms.
+                    hide_completion = \
+                        not just_short_opts and is_short_opt(option)
+
+                    options_map[option] = (param, hide_completion)
 
         # For available commands, create map from command names to the
         # associated `click.Command`.
@@ -122,11 +130,13 @@ class ClickCompleter(Completer):
                 click._bashcomplete.get_choices(self.cli, '', args, incomplete)
             for completion_text in click_completions:
                 start_pos = -len(incomplete) if cursor_within_command else 0
+                hide_completion = False
 
                 # If this completion is for an option or command, get the
                 # corresponding Option/Command object so we can display the
                 # help alongside the completion.
-                corresponding_option = options_map.get(completion_text)
+                corresponding_option, hide_completion = \
+                    options_map[completion_text]
                 corresponding_command = commands_map.get(completion_text)
                 if corresponding_option:
                     completion_meta = corresponding_option.help
@@ -134,6 +144,9 @@ class ClickCompleter(Completer):
                     completion_meta = corresponding_command.short_help
                 else:
                     completion_meta = None
+
+                if hide_completion:
+                    continue
 
                 completion = Completion(
                     completion_text,
@@ -145,6 +158,10 @@ class ClickCompleter(Completer):
 
         for item in completions:
             yield item
+
+
+def is_short_opt(opt):
+    return opt[0] == '-' and opt[1] != '-'
 
 
 def repl(
