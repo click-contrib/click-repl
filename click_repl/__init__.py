@@ -149,7 +149,9 @@ def repl(
 
     if isatty:
         prompt_kwargs = prompt_kwargs or {}
-        prompt_kwargs.setdefault('message', u'> ')
+        # don't set 'message' if caller defines 'get_prompt_tokens'
+        if not prompt_kwargs.get('get_prompt_tokens', None):
+            prompt_kwargs.setdefault('message', u'> ')
         history = prompt_kwargs.pop('history', None) \
             or InMemoryHistory()
         completer = prompt_kwargs.pop('completer', None) \
