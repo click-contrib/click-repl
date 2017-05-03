@@ -187,7 +187,11 @@ def repl(
             except ExitReplException:
                 break
 
-        args = shlex.split(command)
+        try:
+            args = shlex.split(command)
+        except ValueError as e:
+            click.echo("{}: {}".format(type(e).__name__, e))
+            continue
 
         try:
             with group.make_context(None, args, parent=group_ctx) as ctx:
