@@ -118,6 +118,28 @@ class ClickCompleter(Completer):
                 yield item
 
 
+def bootstrap_prompt(prompt_kwargs, group):
+    """
+    Bootstrap prompt_toolkit kwargs or use user defined values.
+
+    :param prompt_kwargs: The user specified prompt kwargs.
+    """
+    prompt_kwargs = prompt_kwargs or {}
+
+    defaults = {
+        'history': InMemoryHistory(),
+        'complete': ClickCompleter(group),
+        'message': u'> ',
+    }
+
+    for key in defaults:
+        default_value = defaults[key]
+        if key not in prompt_kwargs:
+            prompt_kwargs[key] = default_value
+
+    return prompt_kwargs
+
+
 def repl(
         old_ctx,
         prompt_kwargs=None,
@@ -148,18 +170,8 @@ def repl(
     available_commands.pop(repl_command_name, None)
 
     if isatty:
-        prompt_kwargs = prompt_kwargs or {}
-        # don't set 'message' if caller defines 'get_prompt_tokens'
-        if not prompt_kwargs.get('get_prompt_tokens', None):
-            prompt_kwargs.setdefault('message', u'> ')
-        history = prompt_kwargs.pop('history', None) \
-            or InMemoryHistory()
-        completer = prompt_kwargs.pop('completer', None) \
-            or ClickCompleter(group)
-
         def get_command():
-            return prompt(completer=completer, history=history,
-                          **prompt_kwargs)
+            return prompt(**bootstrap_prompt(prompt_kwargs, group))
     else:
         get_command = sys.stdin.readline
 
