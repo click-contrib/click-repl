@@ -166,7 +166,14 @@ def repl(
     # nesting REPLs (note: pass `None` to `pop` as we don't want to error if
     # REPL command already not present for some reason).
     repl_command_name = old_ctx.command.name
-    available_commands = group_ctx.command.commands
+    if isinstance(group_ctx.command, click.CommandCollection):
+        available_commands = {
+            cmd_name: cmd_obj
+            for source in group_ctx.command.sources
+            for cmd_name, cmd_obj in source.commands.items()
+        }
+    else:
+        available_commands = group_ctx.command.commands
     available_commands.pop(repl_command_name, None)
 
     prompt_kwargs = bootstrap_prompt(prompt_kwargs, group)
