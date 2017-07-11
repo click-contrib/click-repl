@@ -97,12 +97,15 @@ class ClickCompleter(Completer):
 
         choices = []
         for param in ctx.command.params:
-            if not isinstance(param, click.Option):
-                continue
-            for options in (param.opts, param.secondary_opts):
-                for o in options:
-                    choices.append(Completion(o, -len(incomplete),
-                                              display_meta=param.help))
+            if isinstance(param, click.Option):
+                for options in (param.opts, param.secondary_opts):
+                    for o in options:
+                        choices.append(Completion(o, -len(incomplete),
+                                                  display_meta=param.help))
+            elif isinstance(param, click.Argument):
+                if isinstance(param.type, click.Choice):
+                    for choice in param.type.choices:
+                        choices.append(Completion(choice, -len(incomplete)))
 
         if isinstance(ctx.command, click.MultiCommand):
             for name in ctx.command.list_commands(ctx):
