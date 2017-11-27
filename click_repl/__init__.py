@@ -169,9 +169,11 @@ def repl(
     available_commands = group_ctx.command.commands
     available_commands.pop(repl_command_name, None)
 
+    prompt_kwargs = bootstrap_prompt(prompt_kwargs, group)
+
     if isatty:
         def get_command():
-            return prompt(**bootstrap_prompt(prompt_kwargs, group))
+            return prompt(**prompt_kwargs)
     else:
         get_command = sys.stdin.readline
 
