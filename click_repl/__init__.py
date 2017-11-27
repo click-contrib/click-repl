@@ -128,7 +128,7 @@ def bootstrap_prompt(prompt_kwargs, group):
 
     defaults = {
         'history': InMemoryHistory(),
-        'complete': ClickCompleter(group),
+        'completer': ClickCompleter(group),
         'message': u'> ',
     }
 
