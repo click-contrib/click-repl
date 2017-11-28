@@ -113,6 +113,20 @@ class ClickCompleter(Completer):
                     display_meta=getattr(command, 'short_help')
                 ))
 
+        while ctx.parent is not None:
+            ctx = ctx.parent
+            if (isinstance(ctx.command, click.MultiCommand) and
+                    ctx.command.chain):
+                remaining_commands = sorted(
+                    set(ctx.command.list_commands(ctx)) -
+                    set(ctx.protected_args))
+                for name in remaining_commands:
+                    command = ctx.command.get_command(ctx, name)
+                    choices.append(Completion(
+                                    name, -len(incomplete),
+                                    display_meta=getattr(command, 'short_help')
+                    ))
+
         for item in choices:
             if item.text.startswith(incomplete):
                 yield item
@@ -172,6 +186,9 @@ def repl(
     prompt_kwargs = bootstrap_prompt(prompt_kwargs, group)
 
     if isatty:
+        prompt_kwargs = prompt_kwargs or {}
+        prompt_kwargs = bootstrap_prompt(prompt_kwargs, group)
+
         def get_command():
             return prompt(**prompt_kwargs)
     else:
