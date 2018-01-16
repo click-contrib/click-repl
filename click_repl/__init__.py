@@ -37,6 +37,18 @@ def _get_registered_target(name, default=None):
     return default
 
 
+def _get_available_commands(cmd):
+    if isinstance(cmd, click.CommandCollection):
+        available_commands = {
+            cmd_name: cmd_obj
+            for source in cmd.sources
+            for cmd_name, cmd_obj in source.commands.items()
+        }
+    else:
+        available_commands = cmd.commands
+    return available_commands
+
+
 def _exit_internal():
     raise ExitReplException()
 
@@ -169,14 +181,8 @@ def repl(
     # nesting REPLs (note: pass `None` to `pop` as we don't want to error if
     # REPL command already not present for some reason).
     repl_command_name = old_ctx.command.name
-    if isinstance(group_ctx.command, click.CommandCollection):
-        available_commands = {
-            cmd_name: cmd_obj
-            for source in group_ctx.command.sources
-            for cmd_name, cmd_obj in source.commands.items()
-        }
-    else:
-        available_commands = group_ctx.command.commands
+
+    available_commands = _get_available_commands(cmd=group_ctx.command)
     available_commands.pop(repl_command_name, None)
 
     prompt_kwargs = bootstrap_prompt(prompt_kwargs, group)

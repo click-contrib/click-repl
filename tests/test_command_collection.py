@@ -1,6 +1,6 @@
 
 import click
-from click_repl import ClickCompleter
+from click_repl import ClickCompleter, _get_available_commands
 from prompt_toolkit.document import Document
 
 
@@ -22,12 +22,11 @@ def test_completion():
     def foobar_cmd():
         pass
 
-    c = ClickCompleter(click.CommandCollection(
-        sources=[foo_group, foobar_group]
-    ))
-    completions = list(c.get_completions(Document(u'foo')))
+    cmd_collection = click.CommandCollection(sources=[foo_group, foobar_group])
 
-    assert set(x.text for x in completions) == set([
+    cmds = _get_available_commands(cmd_collection)
+
+    assert set(cmds.keys()) == set([
         u'foo_cmd',
         u'foobar_cmd'
     ])
