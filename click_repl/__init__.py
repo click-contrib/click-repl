@@ -37,6 +37,18 @@ def _get_registered_target(name, default=None):
     return default
 
 
+def _get_available_commands(cmd):
+    if isinstance(cmd, click.CommandCollection):
+        available_commands = {
+            cmd_name: cmd_obj
+            for source in cmd.sources
+            for cmd_name, cmd_obj in source.commands.items()
+        }
+    else:
+        available_commands = cmd.commands
+    return available_commands
+
+
 def _exit_internal():
     raise ExitReplException()
 
@@ -97,12 +109,15 @@ class ClickCompleter(Completer):
 
         choices = []
         for param in ctx.command.params:
-            if not isinstance(param, click.Option):
-                continue
-            for options in (param.opts, param.secondary_opts):
-                for o in options:
-                    choices.append(Completion(o, -len(incomplete),
-                                              display_meta=param.help))
+            if isinstance(param, click.Option):
+                for options in (param.opts, param.secondary_opts):
+                    for o in options:
+                        choices.append(Completion(o, -len(incomplete),
+                                                  display_meta=param.help))
+            elif isinstance(param, click.Argument):
+                if isinstance(param.type, click.Choice):
+                    for choice in param.type.choices:
+                        choices.append(Completion(choice, -len(incomplete)))
 
         if isinstance(ctx.command, click.MultiCommand):
             for name in ctx.command.list_commands(ctx):
@@ -166,7 +181,8 @@ def repl(
     # nesting REPLs (note: pass `None` to `pop` as we don't want to error if
     # REPL command already not present for some reason).
     repl_command_name = old_ctx.command.name
-    available_commands = group_ctx.command.commands
+
+    available_commands = _get_available_commands(cmd=group_ctx.command)
     available_commands.pop(repl_command_name, None)
 
     prompt_kwargs = bootstrap_prompt(prompt_kwargs, group)
