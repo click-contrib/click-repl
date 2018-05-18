@@ -235,9 +235,11 @@ def register_repl(group, name='repl'):
     """Register :func:`repl()` as sub-command *name* of *group*."""
     group.command(name=name)(click.pass_context(repl))
 
+
 def exit():
     """Exit the repl"""
     _exit_internal()
+
 
 def dispatch_repl_commands(command):
     """Execute system commands entered in the repl.
