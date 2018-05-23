@@ -12,7 +12,7 @@ import six
 from .exceptions import InternalCommandException, ExitReplException  # noqa
 
 
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 _internal_commands = dict()
 
