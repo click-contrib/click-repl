@@ -21,6 +21,7 @@ In your click_ app:
         click.echo("Hello world!")
 
     register_repl(cli)
+    cli()
 
 In the shell::
 
@@ -68,6 +69,8 @@ directly instead of ``register_repl``. For example, in your app:
             'history': FileHistory('/etc/myrepl/myrepl-history'),
         }
         repl(click.get_current_context(), prompt_kwargs=prompt_kwargs)
+        
+    cli()
 
 And then your custom ``myrepl`` command will be available on your CLI, which
 will start a REPL which has its history stored in
