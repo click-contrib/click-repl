@@ -5,7 +5,6 @@ from prompt_toolkit.document import Document
 
 
 def test_completion():
-
     @click.group()
     def foo_group():
         pass
@@ -22,12 +21,7 @@ def test_completion():
     def foobar_cmd():
         pass
 
-    c = ClickCompleter(click.CommandCollection(
-        sources=[foo_group, foobar_group]
-    ))
-    completions = list(c.get_completions(Document(u'foo')))
+    c = ClickCompleter(click.CommandCollection(sources=[foo_group, foobar_group]))
+    completions = list(c.get_completions(Document(u"foo")))
 
-    assert set(x.text for x in completions) == set([
-        u'foo_cmd',
-        u'foobar_cmd'
-    ])
+    assert set(x.text for x in completions) == set([u"foo_cmd", u"foobar_cmd"])

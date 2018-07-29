@@ -5,10 +5,12 @@ python:
     - "3.4"
     - "3.5"
     - "3.6"
+    - "3.7-dev"
 
-env:
-    - BUILD=test
-    - BUILD=style
+matrix:
+  include:
+    - python: "3.6"
+      script: tox -e linters
 
 install: pip install tox
-script: tox -e py-$BUILD
+script: sh scripts/runtox.sh
