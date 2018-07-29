@@ -12,6 +12,14 @@ import six
 from .exceptions import InternalCommandException, ExitReplException  # noqa
 
 
+PY2 = sys.version_info[0] == 2
+
+if PY2:
+    text_type = unicode
+else:
+    text_type = str
+
+
 __version__ = '0.1.4'
 
 _internal_commands = dict()
@@ -100,18 +108,18 @@ class ClickCompleter(Completer):
             if isinstance(param, click.Option):
                 for options in (param.opts, param.secondary_opts):
                     for o in options:
-                        choices.append(Completion(o, -len(incomplete),
+                        choices.append(Completion(text_type(o), -len(incomplete),
                                                   display_meta=param.help))
             elif isinstance(param, click.Argument):
                 if isinstance(param.type, click.Choice):
                     for choice in param.type.choices:
-                        choices.append(Completion(choice, -len(incomplete)))
+                        choices.append(Completion(text_type(choice), -len(incomplete)))
 
         if isinstance(ctx.command, click.MultiCommand):
             for name in ctx.command.list_commands(ctx):
                 command = ctx.command.get_command(ctx, name)
                 choices.append(Completion(
-                    name,
+                    text_type(name),
                     -len(incomplete),
                     display_meta=getattr(command, 'short_help')
                 ))
