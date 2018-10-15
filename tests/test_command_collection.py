@@ -24,4 +24,4 @@ def test_completion():
     c = ClickCompleter(click.CommandCollection(sources=[foo_group, foobar_group]))
     completions = list(c.get_completions(Document(u"foo")))
 
-    assert set(x.text for x in completions) == set([u"foo_cmd", u"foobar_cmd"])
+    assert set(x.text for x in completions) == set([u"foo-cmd", u"foobar-cmd"])

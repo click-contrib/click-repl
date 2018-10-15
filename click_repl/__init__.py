@@ -1,22 +1,27 @@
-from collections import defaultdict
-from prompt_toolkit.completion import Completer, Completion
-from prompt_toolkit.history import InMemoryHistory
-from prompt_toolkit.shortcuts import prompt
-import click
-import click._bashcomplete
-import click.parser
 import os
 import shlex
 import sys
+from collections import defaultdict
+
+import click._bashcomplete
+import click.parser
 import six
-from .exceptions import InternalCommandException, ExitReplException  # noqa
+from prompt_toolkit.completion import Completer
+from prompt_toolkit.completion import Completion
+from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.shortcuts import prompt
+
+from .exceptions import ExitReplException
+from .exceptions import InternalCommandException  # noqa
 
 # Handle click.exceptions.Exit introduced in Click 7.0
 try:
     from click.exceptions import Exit as ClickExit
 except ImportError:
+
     class ClickExit(RuntimeError):
         pass
+
 
 PY2 = sys.version_info[0] == 2
 
@@ -26,7 +31,7 @@ else:
     text_type = str  # noqa
 
 
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 
 _internal_commands = dict()
 
@@ -130,6 +135,9 @@ class ClickCompleter(Completer):
         if isinstance(ctx.command, click.MultiCommand):
             for name in ctx.command.list_commands(ctx):
                 command = ctx.command.get_command(ctx, name)
+                if command.hidden:
+                    continue
+
                 choices.append(
                     Completion(
                         text_type(name),
@@ -139,6 +147,9 @@ class ClickCompleter(Completer):
                 )
 
         for item in choices:
+            if item.text in args:
+                continue
+
             if item.text.startswith(incomplete):
                 yield item
 
@@ -274,7 +285,7 @@ def dispatch_repl_commands(command):
 
     """
     if command.startswith("!"):
-        os.system(command[1:])
+        os.system(command[1:])  # nosec
         return True
 
     return False

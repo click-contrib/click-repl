@@ -1,7 +1,13 @@
+.PHONY: release testrepl
+
 release:
 	@python setup.py sdist bdist_wheel upload
-.PHONY: release
 
 testrepl:
 	@python bin/testrepl.py repl
-.PHONY: testrepl
+
+init:
+	@pip3.6 install -r requirements.txt
+	@pip3.6 install -e .
+test:
+	@pytest tests

@@ -21,8 +21,8 @@ def test_completion():
         pass
 
     c = ClickCompleter(root_command)
-    completions = list(c.get_completions(Document(u"first_level_command ")))
+    completions = list(c.get_completions(Document(u"first-level-command ")))
 
     assert set(x.text for x in completions) == set(
-        [u"second_level_command_one", u"second_level_command_two"]
+        [u"second-level-command-one",u"second-level-command-two"]
     )
