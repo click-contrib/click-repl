@@ -12,5 +12,5 @@ matrix:
     - python: "3.6"
       script: tox -e linters
 
-install: pip install tox
-script: sh scripts/runtox.sh
+install: pip install tox-travis
+script: tox
