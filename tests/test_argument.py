@@ -14,6 +14,6 @@ def test_completion():
         pass
 
     c = ClickCompleter(root_command)
-    completions = list(c.get_completions(Document(u"arg_cmd ")))
+    completions = list(c.get_completions(Document(u"arg-cmd ")))
 
     assert set(x.text for x in completions) == set([u"foo", u"bar"])
