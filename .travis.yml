@@ -11,6 +11,7 @@ matrix:
   include:
     - python: "3.6"
       script: tox -e linters
+      name: linters
 
 install: pip install tox pytest
 script: sh scripts/runtox.sh
