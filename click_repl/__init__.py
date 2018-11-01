@@ -11,12 +11,15 @@ import sys
 import six
 from .exceptions import InternalCommandException, ExitReplException  # noqa
 
+
 # Handle click.exceptions.Exit introduced in Click 7.0
 try:
     from click.exceptions import Exit as ClickExit
 except ImportError:
+
     class ClickExit(RuntimeError):
         pass
+
 
 PY2 = sys.version_info[0] == 2
 
