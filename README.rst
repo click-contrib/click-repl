@@ -47,6 +47,16 @@ PyPI: `<https://pypi.python.org/pypi/click-repl>`_
 
 .. _click: http://click.pocoo.org/
 
+
+
+How to install
+==============
+
+Installation is done with pip:
+
+    $ pip install click-repl
+
+
 Advanced Usage
 ==============
 
