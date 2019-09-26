@@ -1,7 +1,7 @@
 from collections import defaultdict
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.history import InMemoryHistory
-from prompt_toolkit.shortcuts import prompt
+from prompt_toolkit import PromptSession
 import click
 import click._bashcomplete
 import click.parser
@@ -176,7 +176,7 @@ def repl(  # noqa: C901
 
     :param old_ctx: The current Click context.
     :param prompt_kwargs: Parameters passed to
-        :py:func:`prompt_toolkit.shortcuts.prompt`.
+        :py:func:`prompt_toolkit.PromptSession`.
 
     If stdin is not a TTY, no prompt will be printed, but only commands read
     from stdin.
@@ -202,11 +202,12 @@ def repl(  # noqa: C901
     available_commands.pop(repl_command_name, None)
 
     prompt_kwargs = bootstrap_prompt(prompt_kwargs, group)
+    session = PromptSession(**prompt_kwargs)
 
     if isatty:
 
         def get_command():
-            return prompt(**prompt_kwargs)
+            return session.prompt()
 
     else:
         get_command = sys.stdin.readline
