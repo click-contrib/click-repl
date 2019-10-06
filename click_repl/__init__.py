@@ -115,6 +115,8 @@ class ClickCompleter(Completer):
         choices = []
         for param in ctx.command.params:
             if isinstance(param, click.Option):
+                if getattr(param, 'hidden', False):
+                    continue
                 for options in (param.opts, param.secondary_opts):
                     for o in options:
                         choices.append(
@@ -130,6 +132,8 @@ class ClickCompleter(Completer):
         if isinstance(ctx.command, click.MultiCommand):
             for name in ctx.command.list_commands(ctx):
                 command = ctx.command.get_command(ctx, name)
+                if getattr(command, 'hidden', False):
+                    continue
                 choices.append(
                     Completion(
                         text_type(name),
