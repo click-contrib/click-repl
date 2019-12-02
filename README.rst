@@ -82,6 +82,44 @@ instantiating your ``Prompt``.
 
 .. _Prompt: http://python-prompt-toolkit.readthedocs.io/en/stable/pages/reference.html?prompt_toolkit.shortcuts.Prompt#prompt_toolkit.shortcuts.Prompt
 
+this is a more advanced example
+
+.. code:: python
+
+    import os
+    from pathlib import Path
+
+    import click
+    from click_repl import repl
+    from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+    from prompt_toolkit.history import FileHistory
+
+
+    history_file_path = os.path.join(Path.home(), ".click_history")
+    # don't truncate file with `w+`, it's a history file for God's sake
+    with open(history_file_path, "a+"):
+        pass
+
+    @click.group(invoke_without_command=True)
+    @click.pass_context
+    def main(ctx):
+        if not ctx.invoked_subcommand:
+            prompt_kwargs = {
+                "history": FileHistory(history_file_path),
+                "complete_while_typing": True,
+                "auto_suggest": AutoSuggestFromHistory(),
+                "validate_while_typing": True,
+                "enable_history_search": True,
+                "message": "> ",
+            }
+            repl(click.get_current_context(), prompt_kwargs=prompt_kwargs)
+
+    @main.group()
+    def root_command():
+        pass
+
+    main()
+
 License
 =======
 
