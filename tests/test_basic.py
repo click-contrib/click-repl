@@ -24,5 +24,5 @@ def test_completion():
     completions = list(c.get_completions(Document(u"first-level-command ")))
 
     assert set(x.text for x in completions) == set(
-        [u"second-level-command-one",u"second-level-command-two"]
+        [u"second-level-command-one", u"second-level-command-two"]
     )

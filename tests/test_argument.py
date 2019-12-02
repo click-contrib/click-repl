@@ -18,6 +18,7 @@ def test_completion_with_argument():
 
     assert set(x.text for x in completions) == set([u"foo", u"bar"])
 
+
 def test_completion_with_option():
     @click.group()
     def root_command():
@@ -34,8 +35,8 @@ def test_completion_with_option():
 
     assert set(x.text for x in completions) == set([u"--handler-1", u"--handler-2"])
 
-def test_completion_wont_show_hidden_groups():
 
+def test_completion_wont_show_hidden_groups():
     @click.group()
     def main():
         pass
@@ -58,7 +59,6 @@ def test_completion_wont_show_hidden_groups():
     def arg_cmd_2():
         pass
 
-
     c = ClickCompleter(main)
     completions = list(c.get_completions(Document(u" ")))
 
@@ -66,7 +66,6 @@ def test_completion_wont_show_hidden_groups():
 
 
 def test_completion_wont_show_already_typed_options():
-
     @click.group()
     def root_command():
         pass
@@ -81,4 +80,3 @@ def test_completion_wont_show_already_typed_options():
     completions = list(c.get_completions(Document(u"arg-cmd --handler-1 foo ")))
 
     assert set(x.text for x in completions) == set([u"--handler-2"])
-
