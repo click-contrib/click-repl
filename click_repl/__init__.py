@@ -121,10 +121,23 @@ class ClickCompleter(Completer):
         for param in ctx.command.params:
             if isinstance(param, click.Option):
                 for options in (param.opts, param.secondary_opts):
+
                     for o in options:
+                        r = param.help or ''
+                        # if option type is `Choice`, append those values to prompt
+                        # like Click do when reach command by `--help`
+                        if isinstance(param.type, click.Choice):
+                            r += " " + "[" + "|".join(param.type.choices) + "]"
+
+                            choices.append(
+                                Completion(
+                                    text_type(o), -len(incomplete), display_meta=r,
+                                )
+                            )
+
                         choices.append(
                             Completion(
-                                text_type(o), -len(incomplete), display_meta=param.help
+                                text_type(o), -len(incomplete), display_meta=r
                             )
                         )
             elif isinstance(param, click.Argument):
