@@ -124,7 +124,7 @@ class ClickCompleter(Completer):
 
                     for o in options:
                         r = param.help or ""
-                        # if option type is `Choice`, append those values to prompt
+                        # if option type is `Choice`, append those values to command help text
                         # like Click do when reach command by `--help`
                         if isinstance(param.type, click.Choice):
                             r += " " + "[" + "|".join(param.type.choices) + "]"
