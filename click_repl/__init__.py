@@ -128,7 +128,7 @@ class ClickCompleter(Completer):
                         # like Click do when reach command by `--help`
                         if isinstance(param.type, click.Choice):
                             r += " [{}]".format(
-                                '|'.join(str(i) for i in param.type.choices)
+                                "|".join(str(i) for i in param.type.choices)
                             )
                             choices.append(
                                 Completion(
