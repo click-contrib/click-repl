@@ -135,6 +135,7 @@ class ClickCompleter(Completer):
         if isinstance(ctx.command, click.MultiCommand):
             for name in ctx.command.list_commands(ctx):
                 command = ctx.command.get_command(ctx, name)
+                # don't show command groups that has attr `hidden` set to True
                 if command.hidden:
                     continue
 
@@ -147,6 +148,7 @@ class ClickCompleter(Completer):
                 )
 
         for item in choices:
+            # don't show already typed `Options`
             if item.text in args:
                 continue
 
