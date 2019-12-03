@@ -123,7 +123,7 @@ class ClickCompleter(Completer):
                 for options in (param.opts, param.secondary_opts):
 
                     for o in options:
-                        r = param.help or ''
+                        r = param.help or ""
                         # if option type is `Choice`, append those values to prompt
                         # like Click do when reach command by `--help`
                         if isinstance(param.type, click.Choice):
@@ -136,9 +136,7 @@ class ClickCompleter(Completer):
                             )
 
                         choices.append(
-                            Completion(
-                                text_type(o), -len(incomplete), display_meta=r
-                            )
+                            Completion(text_type(o), -len(incomplete), display_meta=r)
                         )
             elif isinstance(param, click.Argument):
                 if isinstance(param.type, click.Choice):
