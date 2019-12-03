@@ -127,7 +127,9 @@ class ClickCompleter(Completer):
                         # if option type is `Choice`, append those values to command help text
                         # like Click do when reach command by `--help`
                         if isinstance(param.type, click.Choice):
-                            r += "[%s]" % "|".join(param.type.choices)
+                            r += " [{}]".format(
+                                '|'.join(str(i) for i in param.type.choices)
+                            )
                             choices.append(
                                 Completion(
                                     text_type(o), -len(incomplete), display_meta=r,
