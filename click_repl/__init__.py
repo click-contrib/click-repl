@@ -130,15 +130,11 @@ class ClickCompleter(Completer):
                             r += " [{}]".format(
                                 "|".join(str(i) for i in param.type.choices)
                             )
-                            choices.append(
-                                Completion(
-                                    text_type(o), -len(incomplete), display_meta=r,
-                                )
-                            )
 
                         choices.append(
                             Completion(text_type(o), -len(incomplete), display_meta=r)
                         )
+                        
             elif isinstance(param, click.Argument):
                 if isinstance(param.type, click.Choice):
                     for choice in param.type.choices:
