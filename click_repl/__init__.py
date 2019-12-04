@@ -83,8 +83,9 @@ _register_internal_command(
 
 
 class ClickCompleter(Completer):
-    def __init__(self, cli):
+    def __init__(self, cli, ctx=None):
         self.cli = cli
+        self.ctx = ctx
 
     def get_completions(self, document, complete_event=None):
         # Code analogous to click._bashcomplete.do_complete
@@ -108,24 +109,52 @@ class ClickCompleter(Completer):
             # command, so give all relevant completions for this context.
             incomplete = ""
 
-        ctx = click._bashcomplete.resolve_ctx(self.cli, "", args)
+
+        ctx = click._bashcomplete.resolve_ctx(self.cli, "", list(args))
         if ctx is None:
             return
 
         choices = []
+        param_choices = []
+        param_called = False
+        autocomplete_ctx = self.ctx or ctx
         for param in ctx.command.params:
             if isinstance(param, click.Option):
-                for options in (param.opts, param.secondary_opts):
+                possible_options = (param.opts, param.secondary_opts)
+                for options in possible_options:
                     for o in options:
                         choices.append(
                             Completion(
                                 text_type(o), -len(incomplete), display_meta=param.help
                             )
                         )
+                        # We want to make sure if this parameter was called
+                        if o in args[param.nargs * -1:]:
+                            param_called = True
+                if param_called and hasattr(param, "autocompletion") and param.autocompletion is not None:
+                    for autocomplete in param.autocompletion(autocomplete_ctx, args, incomplete):
+                        if isinstance(autocomplete, tuple):
+                            param_choices.append(Completion(
+                                text_type(autocomplete[0]), -len(incomplete),
+                                display_meta=autocomplete[1]
+                            ))
+                        else:
+                            param_choices.append(Completion(text_type(autocomplete), -len(incomplete)))
+
             elif isinstance(param, click.Argument):
                 if isinstance(param.type, click.Choice):
                     for choice in param.type.choices:
                         choices.append(Completion(text_type(choice), -len(incomplete)))
+                if hasattr(param, "autocompletion") and param.autocompletion is not None:
+                    for autocomplete in param.autocompletion(autocomplete_ctx, args, incomplete):
+                        if isinstance(autocomplete, tuple):
+                            choices.append(Completion(
+                                text_type(autocomplete[0]), -len(incomplete),
+                                display_meta=autocomplete[1]
+                            ))
+                        else:
+                            choices.append(Completion(text_type(autocomplete), -len(incomplete)))
+
 
         if isinstance(ctx.command, click.MultiCommand):
             for name in ctx.command.list_commands(ctx):
@@ -138,12 +167,16 @@ class ClickCompleter(Completer):
                     )
                 )
 
+        # If we are inside a parameter that was called, we want to show only
+        # relevant choices
+        if param_called:
+            choices = param_choices
         for item in choices:
             if item.text.startswith(incomplete):
                 yield item
 
 
-def bootstrap_prompt(prompt_kwargs, group):
+def bootstrap_prompt(prompt_kwargs, group, ctx=None):
     """
     Bootstrap prompt_toolkit kwargs or use user defined values.
 
@@ -153,7 +186,7 @@ def bootstrap_prompt(prompt_kwargs, group):
 
     defaults = {
         "history": InMemoryHistory(),
-        "completer": ClickCompleter(group),
+        "completer": ClickCompleter(group, ctx=ctx),
         "message": u"> ",
     }
 
@@ -201,7 +234,7 @@ def repl(  # noqa: C901
         available_commands = group_ctx.command.commands
     available_commands.pop(repl_command_name, None)
 
-    prompt_kwargs = bootstrap_prompt(prompt_kwargs, group)
+    prompt_kwargs = bootstrap_prompt(prompt_kwargs, group, ctx=group_ctx)
 
     if isatty:
 
