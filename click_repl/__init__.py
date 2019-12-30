@@ -26,7 +26,7 @@ else:
     text_type = str  # noqa
 
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 
 _internal_commands = dict()
 
@@ -232,7 +232,7 @@ def repl(  # noqa: C901
         }
     else:
         available_commands = group_ctx.command.commands
-    available_commands.pop(repl_command_name, None)
+    original_command = available_commands.pop(repl_command_name, None)
 
     prompt_kwargs = bootstrap_prompt(prompt_kwargs, group, ctx=group_ctx)
 
@@ -288,6 +288,9 @@ def repl(  # noqa: C901
             pass
         except ExitReplException:
             break
+
+    if original_command is not None:
+        available_commands[repl_command_name] = original_command
 
 
 def register_repl(group, name="repl"):
