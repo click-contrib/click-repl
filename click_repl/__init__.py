@@ -162,7 +162,7 @@ class ClickCompleter(Completer):
                 )
 
         for item in choices:
-            # don't show already typed `Options`
+            # don't show already typed options
             if item.text in args:
                 continue
             if item.text.startswith(incomplete):
