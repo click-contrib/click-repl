@@ -119,9 +119,9 @@ class ClickCompleter(Completer):
 
         choices = []
         for param in ctx.command.params:
-                
+
             # don't show options that has attr `hidden` set to True
-            if getattr(param, 'hidden', False):
+            if getattr(param, "hidden", False):
                 continue
 
             if isinstance(param, click.Option):
