@@ -26,7 +26,7 @@ except ImportError:
 PY2 = sys.version_info[0] == 2
 
 if PY2:
-    text_type = unicode  # noqa
+    text_type = unicode  # noqa pylint: disable=undefined-variable
 else:
     text_type = str  # noqa
 
@@ -37,7 +37,7 @@ _internal_commands = dict()
 
 
 def _register_internal_command(names, target, description=None):
-    if not hasattr(target, "__call__"):
+    if not callable(target):
         raise ValueError("Internal command must be a callable")
 
     if isinstance(names, six.string_types):
@@ -157,7 +157,7 @@ class ClickCompleter(Completer):
                     Completion(
                         text_type(name),
                         -len(incomplete),
-                        display_meta=getattr(command, "short_help"),
+                        display_meta=command.short_help,
                     )
                 )
 
@@ -316,3 +316,4 @@ def handle_internal_commands(command):
         target = _get_registered_target(command[1:], default=None)
         if target:
             return target()
+
