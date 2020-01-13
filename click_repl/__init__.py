@@ -122,7 +122,7 @@ class ClickCompleter(Completer):
 
             if isinstance(param, click.Option):
                 # don't show options that has attr `hidden` set to True
-                if getattr(param, "hidden", False):
+                if param.hidden:
                     continue
 
                 for options in (param.opts, param.secondary_opts):
