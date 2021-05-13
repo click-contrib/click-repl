@@ -3,7 +3,7 @@ from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.shortcuts import prompt
 import click
-import click._bashcomplete
+import click.shell_completion
 import click.parser
 import os
 import shlex
@@ -108,7 +108,7 @@ class ClickCompleter(Completer):
             # command, so give all relevant completions for this context.
             incomplete = ""
 
-        ctx = click._bashcomplete.resolve_ctx(self.cli, "", args)
+        ctx = click.shell_completion._resolve_context(self.cli, {}, "", args)
         if ctx is None:
             return
 
