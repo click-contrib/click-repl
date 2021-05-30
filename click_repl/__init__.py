@@ -1,7 +1,7 @@
 from collections import defaultdict
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.history import InMemoryHistory
-from prompt_toolkit.shortcuts import prompt
+from prompt_toolkit.shortcuts import prompt, clear
 import click
 import click.parser
 import os
@@ -83,10 +83,15 @@ def _help_internal():
     return formatter.getvalue()
 
 
+def _clear_internal():
+    return clear
+
+
 _register_internal_command(["q", "quit", "exit"], _exit_internal, "exits the repl")
 _register_internal_command(
     ["?", "h", "help"], _help_internal, "displays general help information"
 )
+_register_internal_command(["c", "cls", "clear"], _clear_internal, "clears screen")
 
 
 class ClickCompleter(Completer):
@@ -244,6 +249,9 @@ def repl(  # noqa: C901
                 result = handle_internal_commands(command)
                 if isinstance(result, six.string_types):
                     click.echo(result)
+                    continue
+                if callable(result):
+                    result()
                     continue
             except ExitReplException:
                 break
