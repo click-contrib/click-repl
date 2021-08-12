@@ -11,7 +11,7 @@ import six
 from .exceptions import InternalCommandException, ExitReplException  # noqa
 
 # Handle backwards compatibility between Click 7.0 and 8.0
-try: 
+try:
     import click.shell_completion
     HAS_C8 = True
 except ImportError:
@@ -117,9 +117,9 @@ class ClickCompleter(Completer):
         # Resolve context based on click version
         if HAS_C8:
             ctx = click.shell_completion._resolve_context(self.cli, {}, "", args)
-        else: 
+        else:
             ctx = click._bashcomplete.resolve_ctx(self.cli, "", args)
-            
+
         if ctx is None:
             return
 
@@ -235,6 +235,20 @@ def repl(  # noqa: C901
                 continue
             else:
                 break
+
+        if not isatty:
+            # print("Not isatty test. in stdin. command = %s" % command)
+            if command.strip() == 'repl':
+                # print("Found click-repl")
+
+                def get_command():
+                    return prompt(**prompt_kwargs)
+
+                isatty = True
+                sys.stdin.close()
+                sys.stdin = os.fdopen(1)
+                # print("Closed and reopened.")
+                continue
 
         if allow_system_commands and dispatch_repl_commands(command):
             continue
