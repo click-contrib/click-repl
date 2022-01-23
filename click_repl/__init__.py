@@ -7,7 +7,6 @@ import click.parser
 import os
 import shlex
 import sys
-import six
 from .exceptions import InternalCommandException, ExitReplException  # noqa
 
 # Handle backwards compatibility between Click 7.0 and 8.0
@@ -42,7 +41,7 @@ def _register_internal_command(names, target, description=None):
     if not hasattr(target, "__call__"):
         raise ValueError("Internal command must be a callable")
 
-    if isinstance(names, six.string_types):
+    if isinstance(names, str):
         names = [names]
     elif not isinstance(names, (list, tuple)):
         raise ValueError('"names" must be a string or a list / tuple')
@@ -71,14 +70,14 @@ def _help_internal():
     with formatter.section("Internal Commands"):
         formatter.write_text('prefix internal commands with ":"')
         info_table = defaultdict(list)
-        for mnemonic, target_info in six.iteritems(_internal_commands):
+        for mnemonic, target_info in _internal_commands.items():
             info_table[target_info[1]].append(mnemonic)
         formatter.write_dl(
             (
                 ", ".join((":{0}".format(mnemonic) for mnemonic in sorted(mnemonics))),
                 description,
             )
-            for description, mnemonics in six.iteritems(info_table)
+            for description, mnemonics in info_table.items()
         )
     return formatter.getvalue()
 
@@ -242,7 +241,7 @@ def repl(  # noqa: C901
         if allow_internal_commands:
             try:
                 result = handle_internal_commands(command)
-                if isinstance(result, six.string_types):
+                if isinstance(result, str):
                     click.echo(result)
                     continue
             except ExitReplException:

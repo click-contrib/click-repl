@@ -23,5 +23,5 @@ setup(
     url="https://github.com/untitaker/click-repl",
     license="MIT",
     packages=["click_repl"],
-    install_requires=["click", "prompt_toolkit", "six"],
+    install_requires=["click", "prompt_toolkit"],
 )
