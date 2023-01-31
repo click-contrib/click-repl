@@ -7,6 +7,7 @@ click-repl
 [![PyPi - version](https://img.shields.io/badge/pypi-v0.2.0-blue)](https://pypi.org/project/click-repl/)
 ![wheels](https://img.shields.io/piwheels/v/click-repl?label=wheel)
 ![PyPI - Status](https://img.shields.io/pypi/status/click)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/click-repl)
 
 Installation
 ===
