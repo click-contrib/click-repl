@@ -3,5 +3,5 @@ release:
 .PHONY: release
 
 testrepl:
-	@python bin/testrepl.py repl
+	@python tests/testrepl.py repl
 .PHONY: testrepl
