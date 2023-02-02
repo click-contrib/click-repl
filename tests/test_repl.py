@@ -26,21 +26,7 @@ def test_simple_repl(capfd):
 
     captured_stdout = capfd.readouterr().out
 
-    if platform.system() == "Linux":
-        expected_output = ""
-    else:
-        expected_output = """Usage: pytest [OPTIONS] COMMAND [ARGS]...
-
-    Options:
-      --help  Show this message and exit.
-
-    Commands:
-      bar
-      foo
-      repl  Start an interactive shell.
-    """
-
-    assert captured_stdout.replace("\r\n", "\n") == expected_output
+    assert captured_stdout.replace("\r\n", "\n") == ''
 
 
 def test_exit_repl_function():

@@ -94,7 +94,7 @@ def _help_internal() -> str:
             info_table[target_info[1]].append(mnemonic)
 
         formatter.write_dl(  # type: ignore[arg-type]
-            (
+            (  # type: ignore[arg-type]
                 ", ".join(map(":{0}".format, sorted(mnemonics))),
                 description,
             )
