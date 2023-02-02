@@ -1,7 +1,6 @@
 import click
 import click_repl
 import pytest
-import platform
 
 
 def test_simple_repl(capfd):
