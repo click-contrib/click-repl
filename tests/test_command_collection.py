@@ -3,7 +3,7 @@ from click_repl import ClickCompleter
 from prompt_toolkit.document import Document
 
 
-def test_completion():
+def test_command_collection():
     @click.group()
     def foo_group():
         pass

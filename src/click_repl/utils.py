@@ -20,10 +20,13 @@ try:
     import click.shell_completion
 
     HAS_C8 = True
-except ImportError:
+    AUTO_COMPLETION_PARAM = "shell_complete"
+
+except (ImportError, ModuleNotFoundError):
     import click._bashcomplete
 
     HAS_C8 = False
+    AUTO_COMPLETION_PARAM = "autocompletion"
 
 # Handle click.exceptions.Exit introduced in Click 7.0
 try:
@@ -37,7 +40,7 @@ except ImportError:
 _internal_commands = {}
 
 
-def text_type(text: Text) -> Text:
+def unicode_text(text: Text) -> Text:
     return "{0}".format(text)
 
 
@@ -90,9 +93,10 @@ def _help_internal() -> str:
 
         formatter.write_dl(  # type: ignore[arg-type]
             (
-                ", ".join(":{0}".format(mnemonic) for mnemonic in sorted(mnemonics)),
+                ", ".join(map(":{0}".format, sorted(mnemonics))),
                 description,
-            ) for description, mnemonics in info_table.items()
+            )
+            for description, mnemonics in info_table.items()
         )
     return formatter.getvalue()
 
@@ -108,9 +112,69 @@ class ClickCompleter(Completer):
         self.cli = cli
         self.ctx = ctx
 
-    def get_completions(  # noqa: max-complexity: 13
+    def _get_completion_from_params(
+        self,
+        ctx_command: click.Command,
+        incomplete: str,
+        autocomplete_ctx: click.Context,
+        args: list[str],
+    ) -> tuple[list[Completion], list[Completion], bool]:
+
+        choices, param_choices, param_called = [], [], False
+
+        for param in ctx_command.params:
+            if isinstance(param, click.Option):
+                if getattr(param, "hidden", False):
+                    continue
+
+                for options in (param.opts, param.secondary_opts):
+                    for option in options:
+                        choices.append(
+                            Completion(
+                                unicode_text(option),
+                                -len(incomplete),
+                                display_meta=param.help,
+                            )
+                        )
+
+                        # We want to make sure if this parameter was called
+                        if option in args[param.nargs * -1 :]:
+                            param_called = True
+
+                if (
+                    param_called
+                    and hasattr(param, AUTO_COMPLETION_PARAM)
+                    and getattr(param, AUTO_COMPLETION_PARAM, None) is not None
+                ):
+                    for autocomplete in getattr(param, AUTO_COMPLETION_PARAM)(
+                        autocomplete_ctx, args, incomplete
+                    ):
+                        if isinstance(autocomplete, tuple):
+                            param_choices.append(
+                                Completion(
+                                    unicode_text(autocomplete[0]),
+                                    -len(incomplete),
+                                    display_meta=autocomplete[1],
+                                )
+                            )
+                        else:
+                            param_choices.append(
+                                Completion(unicode_text(autocomplete), -len(incomplete))
+                            )
+
+            elif isinstance(param, click.Argument):
+                if isinstance(param.type, click.Choice):
+                    for choice in param.type.choices:
+                        choices.append(
+                            Completion(unicode_text(choice), -len(incomplete))
+                        )
+
+        return choices, param_choices, param_called
+
+    def get_completions(
         self, document: Document, complete_event: Optional[CompleteEvent] = None
     ) -> Generator[Completion, None, None]:
+
         # Code analogous to click._bashcomplete.do_complete
 
         try:
@@ -131,6 +195,7 @@ class ClickCompleter(Completer):
             # We've not entered anything, either at all or for the current
             # command, so give all relevant completions for this context.
             incomplete = ""
+
         # Resolve context based on click version
         if HAS_C8:
             ctx = click.shell_completion._resolve_context(self.cli, {}, "", args)
@@ -140,62 +205,25 @@ class ClickCompleter(Completer):
         if ctx is None:
             return  # type: ignore
 
-        choices = []
-        param_choices = []
-        param_called = False
         autocomplete_ctx = self.ctx or ctx
+        ctx_command = ctx.command
 
-        for param in ctx.command.params:
-            if isinstance(param, click.Option):
-                if getattr(param, "hidden", False):
-                    continue
+        if getattr(ctx_command, "hidden", False):
+            return
 
-                for options in (param.opts, param.secondary_opts):
-                    for o in options:
-                        choices.append(
-                            Completion(
-                                text_type(o), -len(incomplete), display_meta=param.help
-                            )
-                        )
+        choices, param_choices, param_called = self._get_completion_from_params(
+            ctx_command, incomplete, autocomplete_ctx, args
+        )
 
-                        # We want to make sure if this parameter was called
-                        if o in args[param.nargs * -1 :]:
-                            param_called = True
-
-                if (
-                    param_called
-                    and hasattr(param, "autocompletion")
-                    and param.autocompletion is not None
-                ):
-                    for autocomplete in param.autocompletion(
-                        autocomplete_ctx, args, incomplete
-                    ):
-                        if isinstance(autocomplete, tuple):
-                            param_choices.append(
-                                Completion(
-                                    text_type(autocomplete[0]),
-                                    -len(incomplete),
-                                    display_meta=autocomplete[1],
-                                )
-                            )
-                        else:
-                            param_choices.append(
-                                Completion(text_type(autocomplete), -len(incomplete))
-                            )
-
-            elif isinstance(param, click.Argument):
-                if isinstance(param.type, click.Choice):
-                    for choice in param.type.choices:
-                        choices.append(Completion(text_type(choice), -len(incomplete)))
-
-        if isinstance(ctx.command, click.MultiCommand):
-            for name in ctx.command.list_commands(ctx):
-                command = ctx.command.get_command(ctx, name)
+        if isinstance(ctx_command, click.MultiCommand):
+            for name in ctx_command.list_commands(ctx):
+                command = ctx_command.get_command(ctx, name)
                 if getattr(command, "hidden", False):
                     continue
+
                 choices.append(
                     Completion(
-                        text_type(name),
+                        unicode_text(name),
                         -len(incomplete),
                         display_meta=getattr(command, "short_help"),
                     )
@@ -237,12 +265,37 @@ def bootstrap_prompt(
     return prompt_kwargs
 
 
-def repl(  # noqa: C901
+def _exec_internal_and_sys_commands(
+    command: str,
+    allow_internal_commands: bool = True,
+    allow_system_commands: bool = True,
+) -> None:
+
+    if allow_system_commands and dispatch_repl_commands(command):
+        return
+
+    if allow_internal_commands:
+        result = handle_internal_commands(command)
+        if isinstance(result, str):
+            click.echo(result)
+            return
+
+
+def _get_command_func(
+    isatty: bool, session: PromptSession[dict[str, Any]]
+) -> Callable[..., Union[str, Any]]:
+    if isatty:
+        return lambda: session.prompt()
+    else:
+        return sys.stdin.readline
+
+
+def repl(
     old_ctx: click.Context,
     prompt_kwargs: dict[str, Any] = {},
     allow_system_commands: bool = True,
     allow_internal_commands: bool = True,
-):
+) -> None:
     """
     Start an interactive shell. All subcommands are available in it.
 
@@ -255,8 +308,8 @@ def repl(  # noqa: C901
 
     """
     # parent should be available, but we're not going to bother if not
-    group_ctx = old_ctx.parent or old_ctx
-    group = group_ctx.command
+    group_ctx: click.Context = old_ctx.parent or old_ctx
+    group: click.Command = group_ctx.command
     isatty = sys.stdin.isatty()
 
     # Delete the REPL command from those available, as we don't want to allow
@@ -276,13 +329,7 @@ def repl(  # noqa: C901
     prompt_kwargs = bootstrap_prompt(prompt_kwargs, group, ctx=group_ctx)
     session: PromptSession[dict[str, Any]] = PromptSession(**prompt_kwargs)
 
-    if isatty:
-
-        def get_command() -> Any:
-            return session.prompt()
-
-    else:
-        get_command = sys.stdin.readline
+    get_command = _get_command_func(isatty, session)
 
     while True:
         try:
@@ -298,32 +345,28 @@ def repl(  # noqa: C901
             else:
                 break
 
-        if allow_system_commands and dispatch_repl_commands(command):
-            continue
-
-        if allow_internal_commands:
-            try:
-                result = handle_internal_commands(command)
-                if isinstance(result, str):
-                    click.echo(result)
-                    continue
-            except ExitReplException:
-                break
+        _exec_internal_and_sys_commands(
+            command,
+            allow_internal_commands=allow_internal_commands,
+            allow_system_commands=allow_system_commands,
+        )
 
         try:
             args = shlex.split(command)
         except ValueError as e:
             click.echo("{}: {}".format(type(e).__name__, e))
-            continue
+            return
 
         try:
             with group.make_context(None, args, parent=group_ctx) as ctx:
                 group.invoke(ctx)
                 ctx.exit()
+
         except click.ClickException as e:
             e.show()
         except (ClickExit, SystemExit):
             pass
+
         except ExitReplException:
             break
 
