@@ -25,7 +25,17 @@ def test_simple_repl(capfd):
 
     captured_stdout = capfd.readouterr().out
 
-    assert captured_stdout.replace("\r\n", "\n") == ''
+    assert (
+        captured_stdout.replace("\r\n", "\n")
+        == """Usage: pytest [OPTIONS] COMMAND [ARGS]...
+Options:
+  --help  Show this message and exit.
+Commands:
+  bar
+  foo
+  repl  Start an interactive shell.
+"""
+    )
 
 
 def test_exit_repl_function():
