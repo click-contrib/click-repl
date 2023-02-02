@@ -30,7 +30,9 @@ def test_get_registered_target_exit_cmd(test_input, expected):
 
 @pytest.mark.parametrize("test_input", ["hi", "hello", "76q358767"])
 def test_get_registered_target(test_input):
-    assert click_repl.utils._get_registered_target(test_input, "Not Found") == "Not Found"
+    assert (
+        click_repl.utils._get_registered_target(test_input, "Not Found") == "Not Found"
+    )
 
 
 @pytest.mark.parametrize(
@@ -61,4 +63,6 @@ def test_get_registered_target_exit_cmd(test_input, expected):
 
 @pytest.mark.parametrize("test_input", ["hi", "hello", "76q358767"])
 def test_get_registered_target(test_input):
-    assert click_repl.utils._get_registered_target(test_input, "Not Found") == "Not Found"
+    assert (
+        click_repl.utils._get_registered_target(test_input, "Not Found") == "Not Found"
+    )

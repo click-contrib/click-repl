@@ -9,4 +9,4 @@ def send_stdin_input(monkeypatch):
     def fake_stdin_provider(*args):
         return lambda: next(iterator)
 
-    monkeypatch.setattr(click_repl.utils, '_get_command_func', fake_stdin_provider)
+    monkeypatch.setattr(click_repl.utils, "_get_command_func", fake_stdin_provider)

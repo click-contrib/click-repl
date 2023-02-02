@@ -51,12 +51,14 @@ def test_inputs(send_stdin_input):
     @click.pass_context
     def cli(ctx):
         if ctx.invoked_subcommand is None:
-          ctx.invoke(repl)
+            ctx.invoke(repl)
 
     @cli.command()
     def repl():
-      click_repl.repl(click.get_current_context())
+        click_repl.repl(click.get_current_context())
 
-
-    with pytest.raises(NoConsoleScreenBufferError, match=r'No Windows console found. Are you running cmd.exe?'):
+    with pytest.raises(
+        NoConsoleScreenBufferError,
+        match=r"No Windows console found. Are you running cmd.exe?",
+    ):
         cli()
