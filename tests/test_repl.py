@@ -23,9 +23,9 @@ def test_simple_repl(capfd):
     with pytest.raises(SystemExit):
         cli()
 
-    captured_stdout = capfd.readouterr().out.replace("\r\n", "\n")
+    captured_stdout = capfd.readouterr().out
     assert (
-        captured_stdout
+        captured_stdout.replace("\r\n", "\n")
         == """Usage: pytest [OPTIONS] COMMAND [ARGS]...
 
 Options:
