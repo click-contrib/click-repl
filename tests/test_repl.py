@@ -1,6 +1,5 @@
 import click
 import click_repl
-import platform
 import pytest
 
 
