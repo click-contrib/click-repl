@@ -1,4 +1,3 @@
-
 import click
 from click_repl import ClickCompleter
 from prompt_toolkit.document import Document
@@ -22,6 +21,6 @@ def test_completion():
         pass
 
     c = ClickCompleter(click.CommandCollection(sources=[foo_group, foobar_group]))
-    completions = list(c.get_completions(Document(u"foo")))
+    completions = list(c.get_completions(Document("foo")))
 
-    assert set(x.text for x in completions) == set([u"foo-cmd", u"foobar-cmd"])
+    assert set(x.text for x in completions) == set(["foo-cmd", "foobar-cmd"])
