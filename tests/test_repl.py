@@ -25,12 +25,6 @@ def test_simple_repl(capfd):
         cli()
 
     captured_stdout = capfd.readouterr().out
-<<<<<<< HEAD
-=======
-    assert (
-        captured_stdout.replace("\r\n", "\n")
-        == """Usage: pytest [OPTIONS] COMMAND [ARGS]...
->>>>>>> c28ab260455a8aa6a6b6b1d7a8bae4ef77f6f493
 
     if platform.system() == "Linux":
         expected_output = ""
@@ -67,17 +61,9 @@ def test_inputs():
 
     try:
         cli()
-<<<<<<< HEAD
     except Exception as e:
-=======
-    except (SystemExit, Exception) as e:
->>>>>>> c28ab260455a8aa6a6b6b1d7a8bae4ef77f6f493
         if (
             type(e).__name__ == "prompt_toolkit.output.win32.NoConsoleScreenBufferError"
             and str(e) == "No Windows console found. Are you running cmd.exe?"
         ):
             pass
-<<<<<<< HEAD
-=======
-
->>>>>>> c28ab260455a8aa6a6b6b1d7a8bae4ef77f6f493
