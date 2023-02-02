@@ -56,8 +56,6 @@ Hello world!
 
 You can use the internal `:help` command to explain usage.
 
-PyPI: `<https://pypi.python.org/pypi/click-repl>`_
-
 Advanced Usage
 ===
 
