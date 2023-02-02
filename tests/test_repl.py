@@ -1,8 +1,7 @@
 import click
 import click_repl
+import prompt_toolkit
 import pytest
-
-from prompt_toolkit.output.win32 import NoConsoleScreenBufferError
 
 
 def test_simple_repl(capfd):
@@ -58,7 +57,7 @@ def test_inputs(send_stdin_input):
         click_repl.repl(click.get_current_context())
 
     with pytest.raises(
-        NoConsoleScreenBufferError,
+        prompt_toolkit.output.win32.NoConsoleScreenBufferError,
         match=r"No Windows console found. Are you running cmd.exe?",
     ):
         cli()
