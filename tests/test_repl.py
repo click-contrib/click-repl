@@ -28,8 +28,10 @@ def test_simple_repl(capfd):
     assert (
         captured_stdout.replace("\r\n", "\n")
         == """Usage: pytest [OPTIONS] COMMAND [ARGS]...
+
 Options:
   --help  Show this message and exit.
+
 Commands:
   bar
   foo
