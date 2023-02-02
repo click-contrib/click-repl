@@ -1,3 +1,5 @@
+from __future__ import annotations, print_function
+
 import os
 import shlex
 import sys
@@ -12,7 +14,6 @@ from prompt_toolkit.completion import CompleteEvent, Completer, Completion
 from prompt_toolkit.document import Document
 from prompt_toolkit.history import InMemoryHistory
 
-from __future__ import annotations, print_function
 from .exceptions import ExitReplException, InternalCommandException  # noqa
 
 
