@@ -57,7 +57,7 @@ def test_inputs(send_stdin_input):
 
     try:
         cli()
-    except Exception as e:
+    except (SystemExit, Exception) as e:
         if (
             type(e).__name__ == "prompt_toolkit.output.win32.NoConsoleScreenBufferError"
             and str(e) == "No Windows console found. Are you running cmd.exe?"
