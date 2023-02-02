@@ -1,4 +1,8 @@
 pytest==7.2.1
 pytest-cov==4.0.0
 mypy==0.991
+<<<<<<< HEAD
 tox==4.4.3
+=======
+tox==4.4.3
+>>>>>>> 9c485aad97b65f6acc45747e88d689f70a6e3937
