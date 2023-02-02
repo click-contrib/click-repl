@@ -86,6 +86,6 @@ And then your custom `myrepl` command will be available on your CLI, which
 will start a REPL which has its history stored in
 `/etc/myrepl/myrepl-history` and persist between sessions.
 
-Any arguments that can be passed to the `python-prompt-toolkit` [Prompt](http://python-prompt-toolkit.readthedocs.io/en/stable/pages/reference.html?prompt_toolkit.shortcuts.Prompt#prompt_toolkit.shortcuts.Prompt) class
+Any arguments that can be passed to the [`python-prompt-toolkit`](https://github.com/prompt-toolkit/python-prompt-toolkit) [Prompt](http://python-prompt-toolkit.readthedocs.io/en/stable/pages/reference.html?prompt_toolkit.shortcuts.Prompt#prompt_toolkit.shortcuts.Prompt) class
 can be passed in the `prompt_kwargs` argument and will be used when
 instantiating your `Prompt`.
