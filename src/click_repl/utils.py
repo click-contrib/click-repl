@@ -100,7 +100,10 @@ def _help_internal() -> str:
             )
             for description, mnemonics in info_table.items()
         )
-    return formatter.getvalue()
+
+    val: str = formatter.getvalue()
+
+    return val
 
 
 _register_internal_command(["q", "quit", "exit"], _exit_internal, "exits the repl")
