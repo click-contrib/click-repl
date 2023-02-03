@@ -41,8 +41,8 @@ def test_hidden_cmd():
     def hidden_cmd(handler):
         pass
 
-    completions = list(c.get_completions(Document("hidden")))
-    assert set(x.text for x in completions) == set()
+    completions = list(c.get_completions(Document("hidden ")))
+    assert set(x.text for x in completions) == set(('arg-cmd', 'option-cmd'))
 
 
 def test_hidden_option():

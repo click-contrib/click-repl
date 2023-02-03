@@ -5,7 +5,7 @@ import shlex
 import sys
 
 from collections import defaultdict
-from typing import Any, Callable, Generator, NoReturn, Optional, Text, Union
+from typing import Any, Callable, Generator, NoReturn, Optional, Union
 
 import click.parser
 
@@ -40,6 +40,10 @@ except ImportError:
 
 
 _internal_commands = {}
+
+
+# def text_type(text: typing.Text) -> typing.Text:
+#     return u"{0}".format(text)
 
 
 PY2 = sys.version_info[0] == 2
@@ -120,6 +124,56 @@ class ClickCompleter(Completer):
         self.cli = cli
         self.ctx = ctx
 
+    def _get_completion_from_autocompletion_functions(
+        self,
+        param: click.Parameter,
+        autocomplete_ctx: click.Context,
+        args: list[str],
+        incomplete: str
+    ) -> list[Completion]:
+
+        param_choices = []
+
+        if HAS_C8:
+            autocompletions = param.shell_complete(
+                autocomplete_ctx, incomplete
+            )
+        else:
+            autocompletions = param.autocompletion(
+                autocomplete_ctx, args, incomplete
+            )
+
+        for autocomplete in autocompletions:
+            if isinstance(autocomplete, tuple):
+                param_choices.append(
+                    Completion(
+                        text_type(autocomplete[0]),
+                        -len(incomplete),
+                        display_meta=autocomplete[1],
+                    )
+                )
+
+            elif HAS_C8 and isinstance(autocomplete, click.shell_completion.CompletionItem):
+                param_choices.append(
+                    Completion(text_type(autocomplete.value), -len(incomplete))
+                )
+
+            else:
+                param_choices.append(
+                    Completion(text_type(autocomplete), -len(incomplete))
+                )
+
+        return param_choices
+
+    def _get_completion_from_choices(self,
+        param: click.Parameter,
+        incomplete: str
+    ) -> list[Completion]:
+        return [
+          Completion(text_type(choice), -len(incomplete))
+          for choice in param.type.choices
+        ]
+
     def _get_completion_from_params(
         self,
         ctx_command: click.Command,
@@ -131,10 +185,10 @@ class ClickCompleter(Completer):
         choices, param_choices, param_called = [], [], False
 
         for param in ctx_command.params:
-            if isinstance(param, click.Option):
-                if getattr(param, "hidden", False):
-                    continue
+            if getattr(param, "hidden", False):
+                continue
 
+            if isinstance(param, click.Option):
                 for options in (param.opts, param.secondary_opts):
                     for option in options:
                         choices.append(
@@ -154,41 +208,31 @@ class ClickCompleter(Completer):
                     and getattr(param, AUTO_COMPLETION_PARAM, None) is not None
                 ):
 
-                    if HAS_C8:
-                        autocompletions = param.shell_complete(
-                            autocomplete_ctx, incomplete
-                        )
-                    else:
-                        autocompletions = param.autocompletion(
-                            autocomplete_ctx, args, incomplete
-                        )
+                    param_choices.extend(self._get_completion_from_autocompletion_functions(
+                        param,
+                        autocomplete_ctx,
+                        args,
+                        incomplete,
+                    ))
 
-                    for autocomplete in autocompletions:
-                        if isinstance(autocomplete, tuple):
-                            param_choices.append(
-                                Completion(
-                                    text_type(autocomplete[0]),
-                                    -len(incomplete),
-                                    display_meta=autocomplete[1],
-                                )
-                            )
-
-                        elif HAS_C8 and isinstance(autocomplete, click.shell_completion.CompletionItem):
-                            param_choices.append(
-                                Completion(text_type(autocomplete.value), -len(incomplete))
-                            )
-
-                        else:
-                            param_choices.append(
-                                Completion(text_type(autocomplete), -len(incomplete))
-                            )
+                elif not HAS_C8 and isinstance(param.type, click.Choice):
+                    param_choices.extend(self._get_completion_from_choices(
+                        param, incomplete
+                    ))
 
             elif isinstance(param, click.Argument):
                 if isinstance(param.type, click.Choice):
-                    for choice in param.type.choices:
-                        choices.append(
-                            Completion(text_type(choice), -len(incomplete))
-                        )
+                    choices.extend(self._get_completion_from_choices(
+                        param, incomplete
+                    ))
+
+                elif getattr(param, AUTO_COMPLETION_PARAM, None) is not None:
+                    choices = self._get_completion_from_autocompletion_functions(
+                        param,
+                        autocomplete_ctx,
+                        args,
+                        incomplete,
+                    )
 
         return choices, param_choices, param_called
 
