@@ -42,8 +42,11 @@ except ImportError:
 _internal_commands = {}
 
 
-def unicode_text(text: Text) -> Text:
-    return "{0}".format(text)
+PY2 = sys.version_info[0] == 2
+if PY2:
+    text_type = unicode  # noqa
+else:
+    text_type = str  # noqa
 
 
 def _register_internal_command(
@@ -136,7 +139,7 @@ class ClickCompleter(Completer):
                     for option in options:
                         choices.append(
                             Completion(
-                                unicode_text(option),
+                                text_type(option),
                                 -len(incomplete),
                                 display_meta=param.help,
                             )
@@ -148,30 +151,43 @@ class ClickCompleter(Completer):
 
                 if (
                     param_called
-                    and hasattr(param, AUTO_COMPLETION_PARAM)
                     and getattr(param, AUTO_COMPLETION_PARAM, None) is not None
                 ):
-                    for autocomplete in getattr(param, AUTO_COMPLETION_PARAM)(
-                        autocomplete_ctx, args, incomplete
-                    ):
+
+                    if HAS_C8:
+                        autocompletions = param.shell_complete(
+                            autocomplete_ctx, incomplete
+                        )
+                    else:
+                        autocompletions = param.autocompletion(
+                            autocomplete_ctx, args, incomplete
+                        )
+
+                    for autocomplete in autocompletions:
                         if isinstance(autocomplete, tuple):
                             param_choices.append(
                                 Completion(
-                                    unicode_text(autocomplete[0]),
+                                    text_type(autocomplete[0]),
                                     -len(incomplete),
                                     display_meta=autocomplete[1],
                                 )
                             )
+
+                        elif HAS_C8 and isinstance(autocomplete, click.shell_completion.CompletionItem):
+                            param_choices.append(
+                                Completion(text_type(autocomplete.value), -len(incomplete))
+                            )
+
                         else:
                             param_choices.append(
-                                Completion(unicode_text(autocomplete), -len(incomplete))
+                                Completion(text_type(autocomplete), -len(incomplete))
                             )
 
             elif isinstance(param, click.Argument):
                 if isinstance(param.type, click.Choice):
                     for choice in param.type.choices:
                         choices.append(
-                            Completion(unicode_text(choice), -len(incomplete))
+                            Completion(text_type(choice), -len(incomplete))
                         )
 
         return choices, param_choices, param_called
@@ -228,7 +244,7 @@ class ClickCompleter(Completer):
 
                 choices.append(
                     Completion(
-                        unicode_text(name),
+                        text_type(name),
                         -len(incomplete),
                         display_meta=getattr(command, "short_help"),
                     )
