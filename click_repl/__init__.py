@@ -10,19 +10,23 @@ import sys
 from .exceptions import InternalCommandException, ExitReplException  # noqa
 
 # Handle backwards compatibility between Click 7.0 and 8.0
-try: 
+try:
     import click.shell_completion
+
     HAS_C8 = True
 except ImportError:
     import click._bashcomplete
+
     HAS_C8 = False
 
 # Handle click.exceptions.Exit introduced in Click 7.0
 try:
     from click.exceptions import Exit as ClickExit
 except ImportError:
+
     class ClickExit(RuntimeError):
         pass
+
 
 PY2 = sys.version_info[0] == 2
 
@@ -116,9 +120,9 @@ class ClickCompleter(Completer):
         # Resolve context based on click version
         if HAS_C8:
             ctx = click.shell_completion._resolve_context(self.cli, {}, "", args)
-        else: 
+        else:
             ctx = click._bashcomplete.resolve_ctx(self.cli, "", args)
-            
+
         if ctx is None:
             return
 
@@ -164,7 +168,7 @@ def bootstrap_prompt(prompt_kwargs, group):
     defaults = {
         "history": InMemoryHistory(),
         "completer": ClickCompleter(group),
-        "message": u"> ",
+        "message": "> ",
     }
 
     for key in defaults:
