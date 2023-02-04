@@ -72,7 +72,11 @@ def test_shell_complete_arg_v8_func_type():
     ) as CompletionItem:
 
         def shell_complete_func(self, ctx, param, incomplete):
-            return [name for name in ("foo", "bar") if name.startswith(incomplete)]
+            return [
+                CompletionItem(name)
+                for name in ("foo", "bar")
+                if name.startswith(incomplete)
+            ]
 
         @root_command.command()
         @click.argument("handler", shell_complete=shell_complete_func)
@@ -88,7 +92,7 @@ def test_shell_complete_option_v8_func_type():
         "click.shell_complete.CompletionItem",
         minversion="8.0.0",
         reason="click-v8 built-in shell complete is not available, so skipped",
-    ) as CompletionItem:
+    ):
 
         def shell_complete_func(self, ctx, param, incomplete):
             return [name for name in ("foo", "bar") if name.startswith(incomplete)]

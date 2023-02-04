@@ -199,7 +199,7 @@ class ClickCompleter(Completer):
                         )
 
                         # We want to make sure if this parameter was called
-                        if option in args[param.nargs * -1 :]:
+                        if option in args[param.nargs * -1:]:
                             param_called = True
 
                 if (
