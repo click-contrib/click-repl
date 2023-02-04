@@ -129,15 +129,13 @@ class ClickCompleter(Completer):
         param: click.Parameter,
         autocomplete_ctx: click.Context,
         args: list[str],
-        incomplete: str
+        incomplete: str,
     ) -> list[Completion]:
 
         param_choices = []
 
         if HAS_C8:
-            autocompletions = param.shell_complete(
-                autocomplete_ctx, incomplete
-            )
+            autocompletions = param.shell_complete(autocomplete_ctx, incomplete)
         else:
             autocompletions = param.autocompletion(  # type: ignore[attr-defined]
                 autocomplete_ctx, args, incomplete
@@ -153,7 +151,9 @@ class ClickCompleter(Completer):
                     )
                 )
 
-            elif HAS_C8 and isinstance(autocomplete, click.shell_completion.CompletionItem):
+            elif HAS_C8 and isinstance(
+                autocomplete, click.shell_completion.CompletionItem
+            ):
                 param_choices.append(
                     Completion(text_type(autocomplete.value), -len(incomplete))
                 )
@@ -165,13 +165,12 @@ class ClickCompleter(Completer):
 
         return param_choices
 
-    def _get_completion_from_choices(self,
-        param: Union[click.Argument, click.Option],
-        incomplete: str
+    def _get_completion_from_choices(
+        self, param: Union[click.Argument, click.Option], incomplete: str
     ) -> list[Completion]:
         return [
             Completion(text_type(choice), -len(incomplete))
-            for choice in param.type.choices  #type: ignore[attr-defined]
+            for choice in param.type.choices  # type: ignore[attr-defined]
         ]
 
     def _get_completion_from_params(
@@ -208,25 +207,28 @@ class ClickCompleter(Completer):
                     and getattr(param, AUTO_COMPLETION_PARAM, None) is not None
                 ):
 
-                    param_choices.extend(self._get_completion_from_autocompletion_functions(
-                        param,
-                        autocomplete_ctx,
-                        args,
-                        incomplete,
-                    ))
+                    param_choices.extend(
+                        self._get_completion_from_autocompletion_functions(
+                            param,
+                            autocomplete_ctx,
+                            args,
+                            incomplete,
+                        )
+                    )
 
                 elif not HAS_C8 and isinstance(param.type, click.Choice):
-                    param_choices.extend(self._get_completion_from_choices(
-                        param, incomplete
-                    ))
+                    param_choices.extend(
+                        self._get_completion_from_choices(param, incomplete)
+                    )
 
             elif isinstance(param, click.Argument):
                 if isinstance(param.type, click.Choice):
-                    choices.extend(self._get_completion_from_choices(
-                        param, incomplete
-                    ))
+                    choices.extend(self._get_completion_from_choices(param, incomplete))
 
-                elif not HAS_C8 and getattr(param, AUTO_COMPLETION_PARAM, None) is not None:
+                elif (
+                    not HAS_C8
+                    and getattr(param, AUTO_COMPLETION_PARAM, None) is not None
+                ):
                     choices = self._get_completion_from_autocompletion_functions(
                         param,
                         autocomplete_ctx,

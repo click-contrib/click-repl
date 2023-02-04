@@ -55,7 +55,6 @@ def test_shell_complete_option_v8_class_type():
                     if name.startswith(incomplete)
                 ]
 
-
         @root_command.command()
         @click.option("--handler", "-h", type=MyVar())
         def autocompletion_opt_cmd(handler):
@@ -64,6 +63,7 @@ def test_shell_complete_option_v8_class_type():
         completions = list(c.get_completions(Document("autocompletion-opt-cmd ")))
         assert set(x.text for x in completions) == set(("--handler", "bar"))
 
+
 def test_shell_complete_arg_v8_func_type():
     with pytest.importorskip(
         "click.shell_complete.CompletionItem",
@@ -71,12 +71,8 @@ def test_shell_complete_arg_v8_func_type():
         reason="click-v8 built-in shell complete is not available, so skipped",
     ) as CompletionItem:
 
-
         def shell_complete_func(self, ctx, param, incomplete):
-            return [
-                name for name in ("foo", "bar")
-                if name.startswith(incomplete)
-            ]
+            return [name for name in ("foo", "bar") if name.startswith(incomplete)]
 
         @root_command.command()
         @click.argument("handler", shell_complete=shell_complete_func)
@@ -94,19 +90,17 @@ def test_shell_complete_option_v8_func_type():
         reason="click-v8 built-in shell complete is not available, so skipped",
     ) as CompletionItem:
 
-
         def shell_complete_func(self, ctx, param, incomplete):
-            return [
-                name for name in ("foo", "bar")
-                if name.startswith(incomplete)
-            ]
+            return [name for name in ("foo", "bar") if name.startswith(incomplete)]
 
         @root_command.command()
         @click.option("--handler", shell_complete=shell_complete_func)
         def autocompletion_opt_cmd(handler):
             pass
 
-        completions = list(c.get_completions(Document("autocompletion-opt-cmd --handler ")))
+        completions = list(
+            c.get_completions(Document("autocompletion-opt-cmd --handler "))
+        )
         assert set(x.text for x in completions) == set(("foo", "bar"))
 
 
@@ -140,13 +134,15 @@ def test_click7_autocomplete_option():
     def autocompletion_opt_cmd2(handler):
         pass
 
-    completions = list(c.get_completions(Document("autocompletion-opt-cmd2 --handler ")))
+    completions = list(
+        c.get_completions(Document("autocompletion-opt-cmd2 --handler "))
+    )
     assert set(x.text for x in completions) == set(("foo", "bar"))
 
 
 def test_arg_choices():
     @root_command.command()
-    @click.argument("handler", type=click.Choice(('foo', 'bar')))
+    @click.argument("handler", type=click.Choice(("foo", "bar")))
     def arg_choices(handler):
         pass
 
@@ -156,7 +152,7 @@ def test_arg_choices():
 
 def test_option_choices():
     @root_command.command()
-    @click.option("--handler", type=click.Choice(('foo', 'bar')))
+    @click.option("--handler", type=click.Choice(("foo", "bar")))
     def option_choices(handler):
         pass
 
@@ -166,9 +162,11 @@ def test_option_choices():
 
 def test_hidden_command_completions():
     @root_command.command(hidden=True)
-    @click.option("--handler", type=click.Choice(('foo', 'bar')))
+    @click.option("--handler", type=click.Choice(("foo", "bar")))
     def option_choices_hidden_cmd(handler):
         pass
 
-    completions = list(c.get_completions(Document("option-choices-hidden-cmd --handler ")))
+    completions = list(
+        c.get_completions(Document("option-choices-hidden-cmd --handler "))
+    )
     assert set(x.text for x in completions) == set()
