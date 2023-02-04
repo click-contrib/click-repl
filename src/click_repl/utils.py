@@ -139,7 +139,7 @@ class ClickCompleter(Completer):
                 autocomplete_ctx, incomplete
             )
         else:
-            autocompletions = param.autocompletion(
+            autocompletions = param.autocompletion(  # type: ignore[attr-defined]
                 autocomplete_ctx, args, incomplete
             )
 
@@ -166,12 +166,12 @@ class ClickCompleter(Completer):
         return param_choices
 
     def _get_completion_from_choices(self,
-        param: click.Parameter,
+        param: Union[click.Argument, click.Option],
         incomplete: str
     ) -> list[Completion]:
         return [
-          Completion(text_type(choice), -len(incomplete))
-          for choice in param.type.choices
+            Completion(text_type(choice), -len(incomplete))
+            for choice in param.type.choices  #type: ignore[attr-defined]
         ]
 
     def _get_completion_from_params(
@@ -226,7 +226,7 @@ class ClickCompleter(Completer):
                         param, incomplete
                     ))
 
-                elif getattr(param, AUTO_COMPLETION_PARAM, None) is not None:
+                elif not HAS_C8 and getattr(param, AUTO_COMPLETION_PARAM, None) is not None:
                     choices = self._get_completion_from_autocompletion_functions(
                         param,
                         autocomplete_ctx,
