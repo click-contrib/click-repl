@@ -3,19 +3,16 @@ from __future__ import annotations, print_function
 import os
 import shlex
 import sys
-
 from collections import defaultdict
 from typing import Any, Callable, Generator, NoReturn, Optional, Union
 
 import click.parser
-
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import CompleteEvent, Completer, Completion
 from prompt_toolkit.document import Document
 from prompt_toolkit.history import InMemoryHistory
 
 from .exceptions import ExitReplException, InternalCommandException  # noqa
-
 
 # Handle backwards compatibility between Click 7.0 and 8.0
 try:
@@ -58,7 +55,6 @@ def _register_internal_command(
     target: Callable[..., Any],
     description: Optional[str] = None,
 ) -> None:
-
     if not hasattr(target, "__call__"):
         raise ValueError("Internal command must be a callable")
 
@@ -131,7 +127,6 @@ class ClickCompleter(Completer):
         args: list[str],
         incomplete: str,
     ) -> list[Completion]:
-
         param_choices = []
 
         if HAS_C8:
@@ -180,7 +175,6 @@ class ClickCompleter(Completer):
         autocomplete_ctx: click.Context,
         args: list[str],
     ) -> tuple[list[Completion], list[Completion], bool]:
-
         choices, param_choices, param_called = [], [], False
 
         for param in ctx_command.params:
@@ -199,14 +193,13 @@ class ClickCompleter(Completer):
                         )
 
                         # We want to make sure if this parameter was called
-                        if option in args[param.nargs * -1:]:
+                        if option in args[param.nargs * -1 :]:
                             param_called = True
 
                 if (
                     param_called
                     and getattr(param, AUTO_COMPLETION_PARAM, None) is not None
                 ):
-
                     param_choices.extend(
                         self._get_completion_from_autocompletion_functions(
                             param,
@@ -241,7 +234,6 @@ class ClickCompleter(Completer):
     def get_completions(
         self, document: Document, complete_event: Optional[CompleteEvent] = None
     ) -> Generator[Completion, None, None]:
-
         # Code analogous to click._bashcomplete.do_complete
 
         try:
@@ -337,7 +329,6 @@ def _exec_internal_and_sys_commands(
     allow_internal_commands: bool = True,
     allow_system_commands: bool = True,
 ) -> None:
-
     if allow_system_commands and dispatch_repl_commands(command):
         return
 
