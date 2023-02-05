@@ -33,4 +33,4 @@ jobs:
           author_email: ${{ github.actor }}@users.noreply.github.com
           message: "Format code with black"
           add: "src"
-          # branch: ${{ github.ref }}
+          branch: ${{ github.ref }}
