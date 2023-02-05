@@ -346,6 +346,8 @@ def _get_command_func(
         return lambda: session.prompt()
     else:
         return sys.stdin.readline
+
+
 def repl(
     old_ctx: click.Context,
     prompt_kwargs: dict[str, Any] = {},
