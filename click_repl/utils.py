@@ -42,7 +42,7 @@ else:
     text_type = str  # noqa
 
 
-def _register_internal_command(names, target, description = None):
+def _register_internal_command(names, target, description=None):
     if not hasattr(target, "__call__"):
         raise ValueError("Internal command must be a callable")
 
@@ -56,7 +56,7 @@ def _register_internal_command(names, target, description = None):
         _internal_commands[name] = (target, description)
 
 
-def _get_registered_target(name, default = None):
+def _get_registered_target(name, default=None):
     target_info = _internal_commands.get(name)
     if target_info:
         return target_info[0]
@@ -100,19 +100,19 @@ _register_internal_command(
 
 
 class ClickCompleter(Completer):
-    def __init__(self, cli, ctx = None):
+    def __init__(self, cli, ctx=None):
         self.cli = cli
         self.ctx = ctx
 
-    def _get_completion_from_autocompletion_functions(self, param, autocomplete_ctx, args, incomplete):
+    def _get_completion_from_autocompletion_functions(
+        self, param, autocomplete_ctx, args, incomplete
+    ):
         param_choices = []
 
         if HAS_C8:
             autocompletions = param.shell_complete(autocomplete_ctx, incomplete)
         else:
-            autocompletions = param.autocompletion(
-                autocomplete_ctx, args, incomplete
-            )
+            autocompletions = param.autocompletion(autocomplete_ctx, args, incomplete)
 
         for autocomplete in autocompletions:
             if isinstance(autocomplete, tuple):
@@ -145,7 +145,8 @@ class ClickCompleter(Completer):
         ]
 
     def _get_completion_from_params(
-        self, ctx_command,
+        self,
+        ctx_command,
         incomplete,
         autocomplete_ctx,
         args,
@@ -200,7 +201,7 @@ class ClickCompleter(Completer):
 
         return choices, param_choices, param_called
 
-    def get_completions(self, document, complete_event = None):
+    def get_completions(self, document, complete_event=None):
         # Code analogous to click._bashcomplete.do_complete
 
         try:
@@ -265,7 +266,7 @@ class ClickCompleter(Completer):
                 yield item
 
 
-def bootstrap_prompt(prompt_kwargs, group, ctx = None):
+def bootstrap_prompt(prompt_kwargs, group, ctx=None):
     """
     Bootstrap prompt_toolkit kwargs or use user defined values.
 
@@ -276,7 +277,7 @@ def bootstrap_prompt(prompt_kwargs, group, ctx = None):
     defaults = {
         "history": InMemoryHistory(),
         "completer": ClickCompleter(group, ctx=ctx),
-        "message": u"> ",
+        "message": "> ",
     }
 
     for key in defaults:
@@ -287,7 +288,9 @@ def bootstrap_prompt(prompt_kwargs, group, ctx = None):
     return prompt_kwargs
 
 
-def _exec_internal_and_sys_commands(command, allow_internal_commands = True, allow_system_commands = True):
+def _exec_internal_and_sys_commands(
+    command, allow_internal_commands=True, allow_system_commands=True
+):
     if allow_system_commands and dispatch_repl_commands(command):
         return
 
@@ -297,7 +300,10 @@ def _exec_internal_and_sys_commands(command, allow_internal_commands = True, all
             click.echo(result)
             return
 
-def repl(old_ctx, prompt_kwargs = {}, allow_system_commands = True, allow_internal_commands = True):
+
+def repl(
+    old_ctx, prompt_kwargs={}, allow_system_commands=True, allow_internal_commands=True
+):
     """
     Start an interactive shell. All subcommands are available in it.
 
@@ -338,7 +344,6 @@ def repl(old_ctx, prompt_kwargs = {}, allow_system_commands = True, allow_intern
 
     else:
         get_command = sys.stdin.readline
-
 
     while True:
         try:
@@ -388,7 +393,7 @@ def repl(old_ctx, prompt_kwargs = {}, allow_system_commands = True, allow_intern
         available_commands[repl_command_name] = original_command
 
 
-def register_repl(group, name = "repl"):
+def register_repl(group, name="repl"):
     """Register :func:`repl()` as sub-command *name* of *group*."""
     group.command(name=name)(click.pass_context(repl))
 
