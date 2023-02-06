@@ -25,7 +25,6 @@ def test_command_collection():
 
     assert set(x.text for x in completions) == set(["foo-cmd", "foobar-cmd"])
 
-
 def test_subcommand_invocation():
     @click.group(invoke_without_command=True)
     @click.option("--user", required=True)
