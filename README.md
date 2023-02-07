@@ -2,8 +2,8 @@ click-repl
 ===
 
 [![build](https://travis-ci.org/click-contrib/click-repl.svg?branch=master)](https://travis-ci.org/click-contrib/click-repl)
-[![Tests](https://github.com/GhostOps77/click-repl/actions/workflows/tests.yml/badge.svg?branch=GhostOps77-patch-1)](https://github.com/GhostOps77/click-repl/actions/runs/4074019555/jobs/7018648133)
-[![License](https://img.shields.io/pypi/l/click-repl?label=License)](https://github.com/GhostOps77/click-repl/blob/GhostOps77-patch-1/LICENSE)
+![Tests](https://github.com/click-contrib/click-repl/actions/workflows/tests.yml/badge.svg?branch=master)
+[![License](https://img.shields.io/pypi/l/click-repl?label=License)](https://github.com/click-contrib/click-repl/LICENSE)
 ![Python - version](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
 [![PyPi - version](https://img.shields.io/badge/pypi-v0.2.0-blue)](https://pypi.org/project/click-repl/)
 ![wheels](https://img.shields.io/piwheels/v/click-repl?label=wheel)
