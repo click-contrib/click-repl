@@ -24,7 +24,7 @@ def test_arg_completion():
 
 def test_option_completion():
     @root_command.command()
-    @click.option("--handler", "-h", type=click.Choice(("foo", "bar")))
+    @click.option("--handler", "-h", type=click.Choice(("foo", "bar")), help="Demo option")
     def option_cmd(handler):
         pass
 
