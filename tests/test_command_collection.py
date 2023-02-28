@@ -20,10 +20,10 @@ def test_command_collection():
     def foobar_cmd():
         pass
 
-    c = ClickCompleter(click.CommandCollection(sources=[foo_group, foobar_group]))
+    c = ClickCompleter(click.CommandCollection(sources=(foo_group, foobar_group)))
     completions = list(c.get_completions(Document("foo")))
 
-    assert set(x.text for x in completions) == set(["foo-cmd", "foobar-cmd"])
+    assert set(x.text for x in completions) == {"foo-cmd", "foobar-cmd"}
 
 
 def test_subcommand_invocation():
@@ -43,7 +43,7 @@ def test_subcommand_invocation():
     c = ClickCompleter(cli)
 
     completions = list(c.get_completions(Document(" ")))
-    assert set(x.text for x in completions) == set(["--user", "c1"])
+    assert set(x.text for x in completions) == {"--user", "c1"}
 
     completions = list(c.get_completions(Document("c1 ")))
-    assert set(x.text for x in completions) == set(["--user"])
+    assert set(x.text for x in completions) == {"--user"}
