@@ -14,25 +14,25 @@ c = ClickCompleter(root_command)
 
 def test_arg_completion():
     @root_command.command()
-    @click.argument("handler", type=click.Choice(["foo", "bar"]))
+    @click.argument("handler", type=click.Choice(("foo", "bar")))
     def arg_cmd(handler):
         pass
 
     completions = list(c.get_completions(Document("arg-cmd ")))
-    assert set(x.text for x in completions) == set(["foo", "bar"])
+    assert set(x.text for x in completions) == {"foo", "bar"}
 
 
 def test_option_completion():
     @root_command.command()
-    @click.option("--handler", "-h", type=click.Choice(["foo", "bar"]))
+    @click.option("--handler", "-h", type=click.Choice(("foo", "bar")))
     def option_cmd(handler):
         pass
 
     completions = list(c.get_completions(Document("option-cmd ")))
-    assert set(x.text for x in completions) == set(["--handler", "-h"])
+    assert set(x.text for x in completions) == {"--handler", "-h"}
 
     completions = list(c.get_completions(Document("option-cmd --h")))
-    assert set(x.text for x in completions) == set(["--handler"])
+    assert set(x.text for x in completions) == {"--handler"}
 
 
 def test_hidden_cmd():
@@ -42,7 +42,7 @@ def test_hidden_cmd():
         pass
 
     completions = list(c.get_completions(Document("hidden ")))
-    assert set(x.text for x in completions) == set(("arg-cmd", "option-cmd"))
+    assert set(x.text for x in completions) == {"arg-cmd", "option-cmd"}
 
 
 def test_hidden_option():
@@ -82,9 +82,9 @@ def test_completion_multilevel_command():
     c = ClickCompleter(root_group)
 
     completions = list(c.get_completions(Document("first-level-command ")))
-    assert set(x.text for x in completions) == set(
-        ["second-level-command-one", "second-level-command-two"]
-    )
+    assert set(x.text for x in completions) == {
+        "second-level-command-one", "second-level-command-two"
+    }
 
     completions = list(c.get_completions(Document(" ")))
-    assert set(x.text for x in completions) == set(["first-level-command"])
+    assert set(x.text for x in completions) == {"first-level-command"}
