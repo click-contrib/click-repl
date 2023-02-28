@@ -35,7 +35,7 @@ def test_shell_complete_arg_v8_class_type():
             pass
 
         completions = list(c.get_completions(Document("autocompletion-cmd ")))
-        assert set(x.text for x in completions) == set(("foo", "bar"))
+        assert set(x.text for x in completions) == {"foo", "bar"}
 
 
 def test_shell_complete_option_v8_class_type():
@@ -61,7 +61,7 @@ def test_shell_complete_option_v8_class_type():
             pass
 
         completions = list(c.get_completions(Document("autocompletion-opt-cmd ")))
-        assert set(x.text for x in completions) == set(("--handler", "bar"))
+        assert set(x.text for x in completions) == {"--handler", "bar"}
 
 
 def test_shell_complete_arg_v8_func_type():
@@ -84,7 +84,7 @@ def test_shell_complete_arg_v8_func_type():
             pass
 
         completions = list(c.get_completions(Document("autocompletion-cmd2 ")))
-        assert set(x.text for x in completions) == set(("foo", "bar"))
+        assert set(x.text for x in completions) == {"foo", "bar"}
 
 
 def test_shell_complete_option_v8_func_type():
@@ -105,7 +105,7 @@ def test_shell_complete_option_v8_func_type():
         completions = list(
             c.get_completions(Document("autocompletion-opt-cmd --handler "))
         )
-        assert set(x.text for x in completions) == set(("foo", "bar"))
+        assert set(x.text for x in completions) == {"foo", "bar"}
 
 
 @pytest.mark.skipif(
@@ -122,7 +122,7 @@ def test_click7_autocomplete_arg():
         pass
 
     completions = list(c.get_completions(Document("autocompletion-arg-cmd2 ")))
-    assert set(x.text for x in completions) == set(("foo", "bar"))
+    assert set(x.text for x in completions) == {"foo", "bar"}
 
 
 @pytest.mark.skipif(
@@ -141,7 +141,7 @@ def test_click7_autocomplete_option():
     completions = list(
         c.get_completions(Document("autocompletion-opt-cmd2 --handler "))
     )
-    assert set(x.text for x in completions) == set(("foo", "bar"))
+    assert set(x.text for x in completions) == {"foo", "bar"}
 
 
 def test_arg_choices():
@@ -151,7 +151,7 @@ def test_arg_choices():
         pass
 
     completions = list(c.get_completions(Document("arg-choices ")))
-    assert set(x.text for x in completions) == set(("foo", "bar"))
+    assert set(x.text for x in completions) == {"foo", "bar"}
 
 
 def test_option_choices():
@@ -161,7 +161,7 @@ def test_option_choices():
         pass
 
     completions = list(c.get_completions(Document("option-choices --handler ")))
-    assert set(x.text for x in completions) == set(("foo", "bar"))
+    assert set(x.text for x in completions) == {"foo", "bar"}
 
 
 def test_hidden_command_completions():
