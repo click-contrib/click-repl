@@ -1,6 +1,7 @@
 import click
 from click_repl import ClickCompleter, repl
 from prompt_toolkit.document import Document
+import pytest
 
 
 def test_command_collection():
@@ -23,27 +24,28 @@ def test_command_collection():
     c = ClickCompleter(click.CommandCollection(sources=(foo_group, foobar_group)))
     completions = list(c.get_completions(Document("foo")))
 
-    assert set(x.text for x in completions) == {"foo-cmd", "foobar-cmd"}
+    assert {x.text for x in completions} == {"foo-cmd", "foobar-cmd"}
 
 
-def test_subcommand_invocation():
-    @click.group(invoke_without_command=True)
-    @click.option("--user", required=True)
-    @click.pass_context
-    def cli(ctx, user):
-        if ctx.invoked_subcommand is None:
-            click.echo("Top-level user: {}".format(user))
-            repl(ctx)
+@click.group(invoke_without_command=True)
+@click.option("--user", required=True)
+@click.pass_context
+def cli(ctx, user):
+    if ctx.invoked_subcommand is None:
+        click.echo("Top-level user: {}".format(user))
+        repl(ctx)
 
-    @cli.command()
-    @click.option("--user")
-    def c1(user):
-        click.echo("Executed C1 with {}!".format(user))
 
-    c = ClickCompleter(cli)
+@cli.command()
+@click.option("--user")
+def c1(user):
+    click.echo("Executed C1 with {}!".format(user))
 
-    completions = list(c.get_completions(Document(" ")))
-    assert set(x.text for x in completions) == {"--user", "c1"}
 
-    completions = list(c.get_completions(Document("c1 ")))
-    assert set(x.text for x in completions) == {"--user"}
+c = ClickCompleter(cli)
+
+
+@pytest.mark.parametrize("test_input,expected", [(" ", {"c1"}), ("c1 ", {"--user"})])
+def test_subcommand_invocation_from_group(test_input, expected):
+    completions = list(c.get_completions(Document(test_input)))
+    assert {x.text for x in completions} == expected
