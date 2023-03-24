@@ -29,7 +29,7 @@ def bootstrap_prompt(
     defaults = {
         "history": InMemoryHistory(),
         "completer": ClickCompleter(group, ctx=ctx),
-        "message": "> ",
+        "message": u"> ",
     }
 
     defaults.update(prompt_kwargs)
