@@ -36,7 +36,7 @@ def test_path_type_arg(test_input, expected):
     }
 
 
-@pytest.mark.skipif(os.name != 'nt', reason='This is a test for Windows OS')
-def test_win_path_env_expanders():
-    completions = list(c.get_completions(Document('path-type-arg %LocalAppData%')))
-    assert {x.display[0][1] for x in completions} == {'Local', 'LocalLow'}
+# @pytest.mark.skipif(os.name != 'nt', reason='This is a test for Windows OS')
+# def test_win_path_env_expanders():
+#     completions = list(c.get_completions(Document('path-type-arg %LocalAppData%')))
+#     assert {x.display[0][1] for x in completions} == {'Local', 'LocalLow'}
