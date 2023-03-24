@@ -28,7 +28,7 @@ except (ImportError, ModuleNotFoundError):
 
 
 def text_type(text):
-    return "{}".format(text)
+    return u"{}".format(text)
 
 
 class ClickCompleter(Completer):
