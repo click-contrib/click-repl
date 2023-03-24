@@ -107,10 +107,10 @@ class ClickCompleter(Completer):
 
         choices = []
         _incomplete = os.path.expandvars(incomplete)
-        search_pattern = incomplete.strip("'\"\t\n\r\v ").replace("\\\\", "\\") + "*"
+        search_pattern = _incomplete.strip("'\"\t\n\r\v ").replace("\\\\", "\\") + "*"
         quote = ""
 
-        if " " in incomplete:
+        if " " in _incomplete:
             for i in incomplete:
                 if i in ("'", '"'):
                     quote = i
@@ -287,7 +287,6 @@ class ClickCompleter(Completer):
                                 display_meta=getattr(command, "short_help", ""),
                             )
                         )
-
 
         except Exception as e:
             click.echo("{}: {}".format(type(e).__name__, str(e)))
