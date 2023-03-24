@@ -3,7 +3,7 @@ import click_repl
 import pytest
 
 
-def test_simple_repl(capfd):
+def test_simple_repl():
     @click.group()
     def cli():
         pass
@@ -29,22 +29,25 @@ def test_exit_repl_function():
         click_repl.utils.exit()
 
 
-# def test_inputs():
-#     @click.group(invoke_without_command=True)
-#     @click.pass_context
-#     def cli(ctx):
-#         if ctx.invoked_subcommand is None:
-#             ctx.invoke(repl)
+def test_inputs(capfd):
+    @click.group(invoke_without_command=True)
+    @click.pass_context
+    def cli(ctx):
+        if ctx.invoked_subcommand is None:
+            ctx.invoke(repl)
 
-#     @cli.command()
-#     def repl():
-#         click_repl.repl(click.get_current_context())
+    @cli.command()
+    def repl():
+        click_repl.repl(click.get_current_context())
 
-#     try:
-#         cli()
-#     except (SystemExit, Exception) as e:
-#         if (
-#             type(e).__name__ == "prompt_toolkit.output.win32.NoConsoleScreenBufferError"
-#             and str(e) == "No Windows console found. Are you running cmd.exe?"
-#         ):
-#             pass
+    try:
+        cli()
+    except (SystemExit, Exception) as e:
+        if (
+            type(e).__name__ == "prompt_toolkit.output.win32.NoConsoleScreenBufferError"
+            and str(e) == "No Windows console found. Are you running cmd.exe?"
+        ):
+            pass
+
+    captured_stdout = capfd.readouterr().out.replace("\r\n", "\n")
+    assert captured_stdout == ""
