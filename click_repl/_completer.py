@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-import ntpath
 import os
 from glob import iglob
 
@@ -79,7 +78,7 @@ class ClickCompleter(Completer):
         return param_choices
 
     def _get_completion_from_choices_click_le_7(self, param, incomplete):
-        if not getattr(param.type, "case_sensitive"):
+        if not getattr(param.type, "case_sensitive", True):
             incomplete = incomplete.lower()
             return [
                 Completion(
@@ -103,16 +102,15 @@ class ClickCompleter(Completer):
             ]
 
     def _get_completion_for_Path_types(self, param, args, incomplete):
-        choices = []
-        search_pattern = incomplete.strip("'\"\t\n\r\v ").replace("\\\\", "\\")
-
         if "*" in incomplete:
             return []
 
-        search_pattern += "*"
+        choices = []
+        _incomplete = os.path.expandvars(incomplete)
+        search_pattern = _incomplete.strip("'\"\t\n\r\v ").replace("\\\\", "\\") + "*"
         quote = ""
 
-        if " " in incomplete:
+        if " " in _incomplete:
             for i in incomplete:
                 if i in ("'", '"'):
                     quote = i
@@ -133,7 +131,7 @@ class ClickCompleter(Completer):
                 Completion(
                     text_type(path),
                     -len(incomplete),
-                    display=text_type(ntpath.basename(path.strip("'\""))),
+                    display=text_type(os.path.basename(path.strip("'\""))),
                 )
             )
 
@@ -267,6 +265,12 @@ class ClickCompleter(Completer):
             return
 
         try:
+            choices.extend(
+                self._get_completion_for_cmd_args(
+                    ctx_command, incomplete, autocomplete_ctx, args
+                )
+            )
+
             if isinstance(ctx_command, click.MultiCommand):
                 incomplete_lower = incomplete.lower()
 
@@ -283,13 +287,6 @@ class ClickCompleter(Completer):
                                 display_meta=getattr(command, "short_help", ""),
                             )
                         )
-
-            else:
-                choices.extend(
-                    self._get_completion_for_cmd_args(
-                        ctx_command, incomplete, autocomplete_ctx, args
-                    )
-                )
 
         except Exception as e:
             click.echo("{}: {}".format(type(e).__name__, str(e)))
