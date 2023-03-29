@@ -56,13 +56,14 @@ def test_repl_dispatches_subcommand(capsys):
     assert capsys.readouterr().out == "Foo!\n"
 
 
-def test_group_command_called_once(capsys):
+def test_group_command_called_on_each_subcommands(capsys):
     @click.group(invoke_without_command=True)
     @click.pass_context
     def cli(ctx):
-        print("cli()")
         if ctx.invoked_subcommand is None:
             click_repl.repl(ctx)
+        else:
+            print("cli()")
 
     @cli.command()
     def foo():
@@ -74,27 +75,52 @@ def test_group_command_called_once(capsys):
 
     with mock_stdin("foo\nbar\n"):
         with pytest.raises(SystemExit):
-            cli(args=[], prog_name="test_group_called_once")
-    assert capsys.readouterr().out == "cli()\nFoo!\nBar!\n"
+            cli(args=[], prog_name="test_group_command_called_on_each_subcommands")
+    assert capsys.readouterr().out == "cli()\nFoo!\ncli()\nBar!\n"
 
 
-def test_independant_args(capsys):
+def test_group_argument_are_preserved(capsys):
     @click.group(invoke_without_command=True)
     @click.argument("argument")
     @click.pass_context
     def cli(ctx, argument):
-        print("cli(%s)" % argument)
         if ctx.invoked_subcommand is None:
             click_repl.repl(ctx)
+        else:
+            print("cli(%s)" % argument)
+
+    @cli.command()
+    @click.argument("argument")
+    def foo(argument):
+        print("Foo: %s!" % argument)
+
+    with mock_stdin("foo bar\n"):
+        with pytest.raises(SystemExit):
+            cli(args=["arg"], prog_name="test_group_argument_are_preserved")
+    assert capsys.readouterr().out == "cli(arg)\nFoo: bar!\n"
+
+
+def test_chain_commands(capsys):
+    @click.group(invoke_without_command=True, chain=True)
+    @click.pass_context
+    def cli(ctx):
+        if ctx.invoked_subcommand is None:
+            click_repl.repl(ctx)
+        else:
+            print("cli()")
 
     @cli.command()
     def foo():
         print("Foo!")
 
-    with mock_stdin("foo\n"):
+    @cli.command()
+    def bar():
+        print("Bar!")
+
+    with mock_stdin("foo bar\n"):
         with pytest.raises(SystemExit):
-            cli(args=["command-line-argument"], prog_name="test_group_called_once")
-    assert capsys.readouterr().out == "cli(command-line-argument)\nFoo!\n"
+            cli(args=[], prog_name="test_chain_commands")
+    assert capsys.readouterr().out == "cli()\nFoo!\nBar!\n"
 
 
 def test_exit_repl_function():
