@@ -12,6 +12,10 @@ def root_command():
 c = ClickCompleter(root_command, click.Context(root_command))
 
 
+@pytest.mark.skipif(
+    int(click.__version__[0]) < 7,
+    reason="Hidden keyword is introduced in click v7, so skipped",
+)
 def test_hidden_cmd():
     @root_command.command("hiddenCmd", hidden=True)
     @click.option("--handler", "-h")
@@ -22,6 +26,10 @@ def test_hidden_cmd():
     assert {x.text for x in completions} == set()
 
 
+@pytest.mark.skipif(
+    int(click.__version__[0]) < 7,
+    reason="Hidden keyword is introduced in click v7, so skipped",
+)
 def test_hidden_option():
     @root_command.command("hiddenOptionCmd")
     @click.option("--handler", "-h", hidden=True)
@@ -32,6 +40,10 @@ def test_hidden_option():
     assert {x.text for x in completions} == set()
 
 
+@pytest.mark.skipif(
+    int(click.__version__[0]) < 7,
+    reason="Hidden keyword is introduced in click v7, so skipped",
+)
 @pytest.mark.parametrize(
     "test_input", ["argsChoicesHiddenCmd foo ", "argsChoicesHiddenCmd --handler "]
 )
@@ -44,44 +56,3 @@ def test_args_of_hidden_command(test_input):
 
     completions = c.get_completions(Document(test_input))
     assert {x.text for x in completions} == set()
-
-
-@click.group()
-def root_group():
-    pass
-
-
-@root_group.group("firstLevelCommand")
-def firstLevelCommand():
-    pass
-
-
-@firstLevelCommand.command("secondLevelCommandOne")
-def secondLevelCommandOne():
-    pass
-
-
-@firstLevelCommand.command("secondLevelCommandTwo")
-def secondLevelCommandTwo():
-    pass
-
-
-c2 = ClickCompleter(root_group, click.Context(root_group))
-
-
-@pytest.mark.parametrize(
-    "test_input, expected",
-    [
-        (
-            "firstLevelCommand ",
-            {
-                "secondLevelCommandOne",
-                "secondLevelCommandTwo",
-            },
-        ),
-        (" ", {"firstLevelCommand"}),
-    ],
-)
-def test_completion_multilevel_command(test_input, expected):
-    completions = c2.get_completions(Document(test_input))
-    assert set(x.text for x in completions) == expected

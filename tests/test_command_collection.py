@@ -52,3 +52,44 @@ c = ClickCompleter(cli, click.Context(cli))
 def test_subcommand_invocation_from_group(test_input, expected):
     completions = list(c.get_completions(Document(test_input)))
     assert {x.text for x in completions} == expected
+
+
+@click.group()
+def root_group():
+    pass
+
+
+@root_group.group("firstLevelCommand")
+def firstLevelCommand():
+    pass
+
+
+@firstLevelCommand.command("secondLevelCommandOne")
+def secondLevelCommandOne():
+    pass
+
+
+@firstLevelCommand.command("secondLevelCommandTwo")
+def secondLevelCommandTwo():
+    pass
+
+
+c2 = ClickCompleter(root_group, click.Context(root_group))
+
+
+@pytest.mark.parametrize(
+    "test_input, expected",
+    [
+        (
+            "firstLevelCommand ",
+            {
+                "secondLevelCommandOne",
+                "secondLevelCommandTwo",
+            },
+        ),
+        (" ", {"firstLevelCommand"}),
+    ],
+)
+def test_completion_multilevel_command(test_input, expected):
+    completions = c2.get_completions(Document(test_input))
+    assert set(x.text for x in completions) == expected

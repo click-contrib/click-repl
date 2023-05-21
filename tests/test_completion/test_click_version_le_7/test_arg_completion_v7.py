@@ -13,7 +13,7 @@ c = ClickCompleter(root_command, click.Context(root_command))
 
 
 @pytest.mark.skipif(
-    click.__version__[0] > "7",
+    int(click.__version__[0]) != 7,
     reason="click-v7 old autocomplete function is not available, so skipped",
 )
 def test_click7_autocomplete_arg():
@@ -30,7 +30,7 @@ def test_click7_autocomplete_arg():
 
 
 @pytest.mark.skipif(
-    click.__version__[0] > "7",
+    int(click.__version__[0]) != 7,
     reason="click-v7 old autocomplete function is not available, so skipped",
 )
 @pytest.mark.parametrize(
