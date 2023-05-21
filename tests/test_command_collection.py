@@ -21,7 +21,8 @@ def test_command_collection():
     def foobar_cmd():
         pass
 
-    c = ClickCompleter(click.CommandCollection(sources=(foo_group, foobar_group)))
+    cmd_collection = click.CommandCollection(sources=(foo_group, foobar_group))
+    c = ClickCompleter(cmd_collection, click.Context(cmd_collection))
     completions = list(c.get_completions(Document("foo")))
 
     assert {x.text for x in completions} == {"foo-cmd", "foobar-cmd"}
@@ -32,7 +33,7 @@ def test_command_collection():
 @click.pass_context
 def cli(ctx, user):
     if ctx.invoked_subcommand is None:
-        click.echo("Top-level user: {}".format(user))
+        click.echo(f"Top-level user: {user}")
         repl(ctx)
 
 
@@ -42,13 +43,12 @@ def c1(user):
     click.echo("Executed C1 with {}!".format(user))
 
 
-c = ClickCompleter(cli)
+c = ClickCompleter(cli, click.Context(cli))
 
 
-@pytest.mark.parametrize("test_input,expected", [
-    (" ", {'--user', 'c1'}),
-    ("c1 ", {"--user"})
-])
+@pytest.mark.parametrize(
+    "test_input,expected", [(" ", {"--user", "c1"}), ("c1 ", {"--user"})]
+)
 def test_subcommand_invocation_from_group(test_input, expected):
     completions = list(c.get_completions(Document(test_input)))
     assert {x.text for x in completions} == expected

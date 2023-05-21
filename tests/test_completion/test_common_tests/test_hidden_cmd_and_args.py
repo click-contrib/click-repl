@@ -8,7 +8,7 @@ def root_command():
     pass
 
 
-c = ClickCompleter(root_command)
+c = ClickCompleter(root_command, click.Context(root_command))
 
 
 def test_hidden_cmd():
@@ -67,7 +67,7 @@ def test_completion_multilevel_command():
     def second_level_command_two():
         pass
 
-    c = ClickCompleter(root_group)
+    c = ClickCompleter(root_group, click.Context(root_group))
 
     completions = list(c.get_completions(Document("first-level-command ")))
     assert set(x.text for x in completions) == {
