@@ -10,7 +10,7 @@ def test_command_collection():
         pass
 
     @foo_group.command()
-    def foo_cmd():
+    def foo():
         pass
 
     @click.group()
@@ -18,14 +18,14 @@ def test_command_collection():
         pass
 
     @foobar_group.command()
-    def foobar_cmd():
+    def foobar():
         pass
 
     cmd_collection = click.CommandCollection(sources=(foo_group, foobar_group))
     c = ClickCompleter(cmd_collection, click.Context(cmd_collection))
     completions = list(c.get_completions(Document("foo")))
 
-    assert {x.text for x in completions} == {"foo-cmd", "foobar-cmd"}
+    assert {x.text for x in completions} == {"foo", "foobar"}
 
 
 @click.group(invoke_without_command=True)

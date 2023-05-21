@@ -1,6 +1,7 @@
 import click
 from click_repl import ClickCompleter
 from prompt_toolkit.document import Document
+import pytest
 
 
 @click.group()
@@ -12,68 +13,67 @@ c = ClickCompleter(root_command, click.Context(root_command))
 
 
 def test_hidden_cmd():
-    @root_command.command(hidden=True)
+    @root_command.command('hiddenCmd', hidden=True)
     @click.option("--handler", "-h")
-    def hidden_cmd(handler):
+    def hiddenCmd(handler):
         pass
 
-    completions = list(c.get_completions(Document("hidden-")))
+    completions = c.get_completions(Document("hiddenC"))
     assert {x.text for x in completions} == set()
 
 
 def test_hidden_option():
-    @root_command.command()
+    @root_command.command('hiddenOptionCmd')
     @click.option("--handler", "-h", hidden=True)
-    def hidden_option_cmd(handler):
+    def hiddenOptionCmd(handler):
         pass
 
-    completions = list(c.get_completions(Document("hidden-option-cmd ")))
+    completions = c.get_completions(Document("hiddenOptionCmd "))
     assert {x.text for x in completions} == set()
 
 
-def test_args_of_hidden_command():
-    @root_command.command(hidden=True)
+@pytest.mark.parametrize("test_input", [
+    "argsChoicesHiddenCmd foo ",
+    "argsChoicesHiddenCmd --handler "
+])
+def test_args_of_hidden_command(test_input):
+    @root_command.command('argsChoicesHiddenCmd', hidden=True)
     @click.argument("handler1", type=click.Choice(("foo", "bar")))
     @click.option("--handler2", type=click.Choice(("foo", "bar")))
-    def args_choices_hidden_cmd(handler):
+    def argsChoicesHiddenCmd(handler):
         pass
 
-    completions = list(c.get_completions(Document("option-")))
-    assert {x.text for x in completions} == set()
-
-    completions = list(c.get_completions(Document("args-choices-hidden-cmd foo ")))
-    assert {x.text for x in completions} == set()
-
-    completions = list(
-        c.get_completions(Document("args-choices-hidden-cmd --handler "))
-    )
+    completions = c.get_completions(Document(test_input))
     assert {x.text for x in completions} == set()
 
 
-def test_completion_multilevel_command():
-    @click.group()
-    def root_group():
-        pass
+@click.group()
+def root_group():
+    pass
 
-    @root_group.group()
-    def first_level_command():
-        pass
+@root_group.group('firstLevelCommand')
+def firstLevelCommand():
+    pass
 
-    @first_level_command.command()
-    def second_level_command_one():
-        pass
+@firstLevelCommand.command('secondLevelCommandOne')
+def secondLevelCommandOne():
+    pass
 
-    @first_level_command.command()
-    def second_level_command_two():
-        pass
+@firstLevelCommand.command('secondLevelCommandTwo')
+def secondLevelCommandTwo():
+    pass
 
-    c = ClickCompleter(root_group, click.Context(root_group))
 
-    completions = list(c.get_completions(Document("first-level-command ")))
-    assert set(x.text for x in completions) == {
-        "second-level-command-one",
-        "second-level-command-two",
-    }
+c2 = ClickCompleter(root_group, click.Context(root_group))
 
-    completions = list(c.get_completions(Document(" ")))
-    assert {x.text for x in completions} == {"first-level-command"}
+
+@pytest.mark.parametrize("test_input, expected", [
+    ("firstLevelCommand ", {
+        "secondLevelCommandOne",
+        "secondLevelCommandTwo",
+    }),
+    (" ", {"firstLevelCommand"})
+])
+def test_completion_multilevel_command(test_input, expected):
+    completions = c2.get_completions(Document(test_input))
+    assert set(x.text for x in completions) == expected

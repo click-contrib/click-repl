@@ -17,20 +17,20 @@ c = ClickCompleter(root_command, click.Context(root_command))
 @pytest.mark.parametrize(
     "test_input,expected",
     [
-        ("path-type-arg ", glob.glob("*")),
-        ("path-type-arg tests/", glob.glob("tests/*")),
-        ("path-type-arg src/*", []),
-        ("path-type-arg src/**", []),
+        ("pathTypeArg ", glob.glob("*")),
+        ("pathTypeArg tests/", glob.glob("tests/*")),
+        ("pathTypeArg src/*", []),
+        ("pathTypeArg src/**", []),
         (
-            "path-type-arg tests/testdir/",
+            "pathTypeArg tests/testdir/",
             glob.glob("tests/testdir/*"),
         ),
     ],
 )
 def test_path_type_arg(test_input, expected):
-    @root_command.command()
+    @root_command.command('pathTypeArg')
     @click.argument("path", type=click.Path())
-    def path_type_arg(path):
+    def pathTypeArg(path):
         pass
 
     completions = list(c.get_completions(Document(test_input)))

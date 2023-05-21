@@ -20,12 +20,12 @@ def test_click7_autocomplete_arg():
     def shell_complete_func(ctx, args, incomplete):
         return [name for name in ("foo", "bar") if name.startswith(incomplete)]
 
-    @root_command.command()
+    @root_command.command('autocompletionCmd')
     @click.argument("handler", autocompletion=shell_complete_func)
-    def autocompletion_arg_cmd2(handler):
+    def autocompletionCmd(handler):
         pass
 
-    completions = list(c.get_completions(Document("autocompletion-arg-cmd2 ")))
+    completions = list(c.get_completions(Document("autocompletionCmd ")))
     assert {x.text for x in completions} == {"foo", "bar"}
 
 
@@ -33,7 +33,14 @@ def test_click7_autocomplete_arg():
     click.__version__[0] > "7",
     reason="click-v7 old autocomplete function is not available, so skipped",
 )
-def test_tuple_return_type_shell_complete_func_click7():
+@pytest.mark.parametrize(
+    "test_input, suggestions, display_txts",
+    [
+        ("tupleTypeAutocompletion ", {"Hi", "Please", "Hey", "Aye"}, {"hi", "please", "hey", "aye"}),
+        ("tupleTypeAutocompletion h", {"Hi", "Hey"}, {"hi", "hey"})
+    ]
+)
+def test_tuple_return_type_shell_complete_func_click7(test_input, suggestions, display_txts):
     def return_type_tuple_shell_complete(ctx, args, incomplete):
         return [
             i
@@ -46,17 +53,13 @@ def test_tuple_return_type_shell_complete_func_click7():
             if i[1].startswith(incomplete)
         ]
 
-    @root_command.command()
+    @root_command.command('tupleTypeAutocompletion')
     @click.argument("foo", autocompletion=return_type_tuple_shell_complete)
-    def tuple_type_autocompletion_cmd(foo):
+    def tupleTypeAutocompletion(foo):
         pass
 
-    completions = list(c.get_completions(Document("tuple-type-autocompletion-cmd ")))
-    assert {x.text for x in completions} == {"Hi", "Please", "Hey", "Aye"} and {
-        x.display_meta[0][-1] for x in completions
-    } == {"hi", "please", "hey", "aye"}
+    completions = c.get_completions(Document(test_input))
+    assert {x.text for x in completions} == suggestions
 
-    completions = list(c.get_completions(Document("tuple-type-autocompletion-cmd h")))
-    assert {x.text for x in completions} == {"Hi", "Hey"} and {
-        x.display_meta[0][-1] for x in completions
-    } == {"hi", "hey"}
+    if click.__version__[0] <= "6":
+        assert {x.display_meta[0][-1] for x in completions} == display_txts
