@@ -111,7 +111,7 @@ def cmd(ctx, argument, option1, option2):
         click_repl.repl(ctx)
 
 
-@cmd.command()
+@cmd.command('foo')
 def foo2():
     print("Foo!")
 
@@ -132,8 +132,8 @@ def foo2():
     ],
 )
 def test_group_with_multiple_optional_args(capsys, args, expected):
-    with mock_stdin("foo\nexit"):
-        with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit):
+        with mock_stdin("foo\n"):
             cmd(args=args, prog_name="test_group_with_multiple_args")
     assert capsys.readouterr().out.replace("\r\n", "\n") == expected
 
