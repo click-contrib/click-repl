@@ -20,7 +20,7 @@ def test_click7_autocomplete_arg():
     def shell_complete_func(ctx, args, incomplete):
         return [name for name in ("foo", "bar") if name.startswith(incomplete)]
 
-    @root_command.command('autocompletionCmd')
+    @root_command.command("autocompletionCmd")
     @click.argument("handler", autocompletion=shell_complete_func)
     def autocompletionCmd(handler):
         pass
@@ -36,11 +36,17 @@ def test_click7_autocomplete_arg():
 @pytest.mark.parametrize(
     "test_input, suggestions, display_txts",
     [
-        ("tupleTypeAutocompletion ", {"Hi", "Please", "Hey", "Aye"}, {"hi", "please", "hey", "aye"}),
-        ("tupleTypeAutocompletion h", {"Hi", "Hey"}, {"hi", "hey"})
-    ]
+        (
+            "tupleTypeAutocompletion ",
+            {"Hi", "Please", "Hey", "Aye"},
+            {"hi", "please", "hey", "aye"},
+        ),
+        ("tupleTypeAutocompletion h", {"Hi", "Hey"}, {"hi", "hey"}),
+    ],
 )
-def test_tuple_return_type_shell_complete_func_click7(test_input, suggestions, display_txts):
+def test_tuple_return_type_shell_complete_func_click7(
+    test_input, suggestions, display_txts
+):
     def return_type_tuple_shell_complete(ctx, args, incomplete):
         return [
             i
@@ -53,7 +59,7 @@ def test_tuple_return_type_shell_complete_func_click7(test_input, suggestions, d
             if i[1].startswith(incomplete)
         ]
 
-    @root_command.command('tupleTypeAutocompletion')
+    @root_command.command("tupleTypeAutocompletion")
     @click.argument("foo", autocompletion=return_type_tuple_shell_complete)
     def tupleTypeAutocompletion(foo):
         pass

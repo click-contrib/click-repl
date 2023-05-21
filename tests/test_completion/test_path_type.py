@@ -28,7 +28,7 @@ c = ClickCompleter(root_command, click.Context(root_command))
     ],
 )
 def test_path_type_arg(test_input, expected):
-    @root_command.command('pathTypeArg')
+    @root_command.command("pathTypeArg")
     @click.argument("path", type=click.Path())
     def pathTypeArg(path):
         pass

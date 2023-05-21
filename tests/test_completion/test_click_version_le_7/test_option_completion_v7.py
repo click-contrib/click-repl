@@ -20,12 +20,10 @@ def test_click7_autocomplete_option():
     def shell_complete_func(ctx, args, incomplete):
         return [name for name in ("foo", "bar") if name.startswith(incomplete)]
 
-    @root_command.command('autocompletionOptCmd')
+    @root_command.command("autocompletionOptCmd")
     @click.option("--handler", autocompletion=shell_complete_func)
     def autocompletionOptCmd(handler):
         pass
 
-    completions = list(
-        c.get_completions(Document("autocompletionOptCmd --handler "))
-    )
+    completions = list(c.get_completions(Document("autocompletionOptCmd --handler ")))
     assert {x.text for x in completions} == {"foo", "bar"}
