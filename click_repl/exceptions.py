@@ -6,7 +6,7 @@ class ExitReplException(InternalCommandException):
     pass
 
 
-class CommandLineParserError(Exception):
+class InvalidGroupFormat(Exception):
     pass
 
 
@@ -15,5 +15,5 @@ try:
     from click.exceptions import Exit as ClickExit
 except (ImportError, ModuleNotFoundError):
 
-    class ClickExit(RuntimeError):  # type: ignore[no-redef]
+    class ClickExit(RuntimeError):
         pass

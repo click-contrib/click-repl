@@ -1,10 +1,10 @@
 import click
 import os
 import shlex
-import sys
 from collections import defaultdict
+from typing import Iterable, Mapping
 
-from .exceptions import CommandLineParserError, ExitReplException
+from .exceptions import ExitReplException
 
 
 __all__ = [
@@ -20,12 +20,50 @@ __all__ = [
 ]
 
 
-# Abstract datatypes in collections module are moved to collections.abc
-# module in Python 3.3
-if sys.version_info >= (3, 3):
-    from collections.abc import Iterable, Mapping  # noqa: F811
-else:
-    from collections import Iterable, Mapping
+def _resolve_context(args, ctx=None):
+    """Produce the context hierarchy starting with the command and
+    traversing the complete arguments. This only follows the commands,
+    it doesn't trigger input prompts or callbacks.
+
+    :param args: List of complete args before the incomplete value.
+    :param cli_ctx: `click.Context` object of the CLI group
+    """
+
+    while args:
+        command = ctx.command
+
+        if isinstance(command, click.MultiCommand):
+            if not command.chain:
+                name, cmd, args = command.resolve_command(ctx, args)
+
+                if cmd is None:
+                    return ctx
+
+                ctx = cmd.make_context(name, args, parent=ctx, resilient_parsing=True)
+                args = ctx.protected_args + ctx.args
+            else:
+                while args:
+                    name, cmd, args = command.resolve_command(ctx, args)
+
+                    if cmd is None:
+                        return ctx
+
+                    sub_ctx = cmd.make_context(
+                        name,
+                        args,
+                        parent=ctx,
+                        allow_extra_args=True,
+                        allow_interspersed_args=False,
+                        resilient_parsing=True,
+                    )
+                    args = sub_ctx.args
+
+                ctx = sub_ctx
+                args = [*sub_ctx.protected_args, *sub_ctx.args]
+        else:
+            break
+
+    return ctx
 
 
 _internal_commands = {}
@@ -104,15 +142,15 @@ def _help_internal():
         for mnemonic, target_info in _internal_commands.items():
             info_table[target_info[1]].append(mnemonic)
 
-        formatter.write_dl(  # type: ignore[arg-type]
-            (  # type: ignore[arg-type]
+        formatter.write_dl(
+            (
                 ", ".join(map(":{}".format, sorted(mnemonics))),
                 description,
             )
             for description, mnemonics in info_table.items()
         )
 
-    val = formatter.getvalue()  # type: str
+    val = formatter.getvalue()
     return val
 
 
@@ -139,10 +177,7 @@ def _execute_internal_and_sys_cmds(
             click.echo(result)
             return None
 
-    try:
-        return split_arg_string(command)
-    except ValueError as e:
-        raise CommandLineParserError("{}".format(e))
+    return split_arg_string(command)
 
 
 def exit():
