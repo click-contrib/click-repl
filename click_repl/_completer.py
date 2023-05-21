@@ -1,12 +1,10 @@
-from __future__ import unicode_literals
-
 import os
 from glob import iglob
 
 import click
 from prompt_toolkit.completion import Completion, Completer
 
-from .utils import split_arg_string
+from .utils import _resolve_context, split_arg_string
 
 __all__ = ["ClickCompleter"]
 
@@ -20,22 +18,21 @@ try:
     HAS_CLICK_V8 = True
     AUTO_COMPLETION_PARAM = "shell_complete"
 except (ImportError, ModuleNotFoundError):
-    import click._bashcomplete  # type: ignore[import]
+    import click._bashcomplete
 
     HAS_CLICK_V8 = False
     AUTO_COMPLETION_PARAM = "autocompletion"
 
 
-def text_type(text):
-    return u"{}".format(text)
-
-
 class ClickCompleter(Completer):
-    __slots__ = ("cli", "ctx")
+    __slots__ = ("cli", "cli_ctx", "parsed_args", "parsed_ctx", "ctx_command")
 
-    def __init__(self, cli, ctx=None):
+    def __init__(self, cli, ctx):
         self.cli = cli
-        self.ctx = ctx
+        self.cli_ctx = ctx
+        self.parsed_args = []
+        self.parsed_ctx = ctx
+        self.ctx_command = ctx.command
 
     def _get_completion_from_autocompletion_functions(
         self,
@@ -49,15 +46,13 @@ class ClickCompleter(Completer):
         if HAS_CLICK_V8:
             autocompletions = param.shell_complete(autocomplete_ctx, incomplete)
         else:
-            autocompletions = param.autocompletion(  # type: ignore[attr-defined]
-                autocomplete_ctx, args, incomplete
-            )
+            autocompletions = param.autocompletion(autocomplete_ctx, args, incomplete)
 
         for autocomplete in autocompletions:
             if isinstance(autocomplete, tuple):
                 param_choices.append(
                     Completion(
-                        text_type(autocomplete[0]),
+                        str(autocomplete[0]),
                         -len(incomplete),
                         display_meta=autocomplete[1],
                     )
@@ -66,14 +61,10 @@ class ClickCompleter(Completer):
             elif HAS_CLICK_V8 and isinstance(
                 autocomplete, click.shell_completion.CompletionItem
             ):
-                param_choices.append(
-                    Completion(text_type(autocomplete.value), -len(incomplete))
-                )
+                param_choices.append(Completion(autocomplete.value, -len(incomplete)))
 
             else:
-                param_choices.append(
-                    Completion(text_type(autocomplete), -len(incomplete))
-                )
+                param_choices.append(Completion(autocomplete, -len(incomplete)))
 
         return param_choices
 
@@ -82,22 +73,22 @@ class ClickCompleter(Completer):
             incomplete = incomplete.lower()
             return [
                 Completion(
-                    text_type(choice),
+                    str(choice),
                     -len(incomplete),
-                    display=text_type(repr(choice) if " " in choice else choice),
+                    display=repr(choice) if " " in choice else choice,
                 )
-                for choice in param.type.choices  # type: ignore[attr-defined]
+                for choice in param.type.choices
                 if choice.lower().startswith(incomplete)
             ]
 
         else:
             return [
                 Completion(
-                    text_type(choice),
+                    str(choice),
                     -len(incomplete),
-                    display=text_type(repr(choice) if " " in choice else choice),
+                    display=repr(choice) if " " in choice else choice,
                 )
-                for choice in param.type.choices  # type: ignore[attr-defined]
+                for choice in param.type.choices
                 if choice.startswith(incomplete)
             ]
 
@@ -129,9 +120,9 @@ class ClickCompleter(Completer):
 
             choices.append(
                 Completion(
-                    text_type(path),
+                    path,
                     -len(incomplete),
-                    display=text_type(os.path.basename(path.strip("'\""))),
+                    display=os.path.basename(path.strip("'\"")),
                 )
             )
 
@@ -139,9 +130,7 @@ class ClickCompleter(Completer):
 
     def _get_completion_for_Boolean_type(self, param, incomplete):
         return [
-            Completion(
-                text_type(k), -len(incomplete), display_meta=text_type("/".join(v))
-            )
+            Completion(k, -len(incomplete), display_meta="/".join(v))
             for k, v in {
                 "true": ("1", "true", "t", "yes", "y", "on"),
                 "false": ("0", "false", "f", "no", "n", "off"),
@@ -150,7 +139,6 @@ class ClickCompleter(Completer):
         ]
 
     def _get_completion_from_params(self, autocomplete_ctx, args, param, incomplete):
-
         choices = []
         param_type = param.type
 
@@ -207,9 +195,9 @@ class ClickCompleter(Completer):
                     elif option.startswith(incomplete):
                         choices.append(
                             Completion(
-                                text_type(option),
+                                option,
                                 -len(incomplete),
-                                display_meta=text_type(param.help or ""),
+                                display_meta=param.help or "",
                             )
                         )
 
@@ -249,52 +237,39 @@ class ClickCompleter(Completer):
             # command, so give all relevant completions for this context.
             incomplete = ""
 
-        # Resolve context based on click version
-        if HAS_CLICK_V8:
-            ctx = click.shell_completion._resolve_context(self.cli, {}, "", args)
-        else:
-            ctx = click._bashcomplete.resolve_ctx(self.cli, "", args)
+        if self.parsed_args != args:
+            self.parsed_args = args
+            self.parsed_ctx = _resolve_context(args, self.cli_ctx)
+            self.ctx_command = self.parsed_ctx.command
 
-        # if ctx is None:
-        #     return  # type: ignore[unreachable]
-
-        autocomplete_ctx = self.ctx or ctx
-        ctx_command = ctx.command
-
-        if getattr(ctx_command, "hidden", False):
+        if getattr(self.ctx_command, "hidden", False):
             return
 
         try:
             choices.extend(
                 self._get_completion_for_cmd_args(
-                    ctx_command, incomplete, autocomplete_ctx, args
+                    self.ctx_command, incomplete, self.parsed_ctx, args
                 )
             )
 
-            if isinstance(ctx_command, click.MultiCommand):
+            if isinstance(self.ctx_command, click.MultiCommand):
                 incomplete_lower = incomplete.lower()
 
-                for name in ctx_command.list_commands(ctx):
-                    command = ctx_command.get_command(ctx, name)
+                for name in self.ctx_command.list_commands(self.parsed_ctx):
+                    command = self.ctx_command.get_command(self.parsed_ctx, name)
                     if getattr(command, "hidden", False):
                         continue
 
                     elif name.lower().startswith(incomplete_lower):
                         choices.append(
                             Completion(
-                                text_type(name),
+                                name,
                                 -len(incomplete),
                                 display_meta=getattr(command, "short_help", ""),
                             )
                         )
 
         except Exception as e:
-            click.echo("{}: {}".format(type(e).__name__, str(e)))
+            click.echo(f"{type(e).__name__}: {e}")
 
-        # If we are inside a parameter that was called, we want to show only
-        # relevant choices
-        # if param_called:
-        #     choices = param_choices
-
-        for item in choices:
-            yield item
+        yield from choices

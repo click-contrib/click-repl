@@ -6,7 +6,7 @@ class ExitReplException(InternalCommandException):
     pass
 
 
-class CommandLineParserError(Exception):
+class InvalidGroupFormat(Exception):
     pass
 
 
