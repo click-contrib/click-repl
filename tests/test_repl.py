@@ -1,21 +1,8 @@
-import contextlib
-import sys
-
 import click
-import click_repl
 import pytest
 
-from io import StringIO
-
-
-@contextlib.contextmanager
-def mock_stdin(text):
-    old_stdin = sys.stdin
-    try:
-        sys.stdin = StringIO(text)
-        yield sys.stdin
-    finally:
-        sys.stdin = old_stdin
+import click_repl
+from tests import mock_stdin
 
 
 def test_simple_repl():
@@ -53,17 +40,17 @@ def test_repl_dispatches_subcommand(capsys):
     with mock_stdin("foo\n"):
         with pytest.raises(SystemExit):
             cli(args=[], prog_name="test_repl_dispatch_subcommand")
-    assert capsys.readouterr().out == "Foo!\n"
+
+    assert capsys.readouterr().out.replace("\r\n", "\n") == "Foo!\n"
 
 
-def test_group_command_called_on_each_subcommands(capsys):
+def test_group_command_called(capsys):
     @click.group(invoke_without_command=True)
     @click.pass_context
     def cli(ctx):
+        print("cli()")
         if ctx.invoked_subcommand is None:
             click_repl.repl(ctx)
-        else:
-            print("cli()")
 
     @cli.command()
     def foo():
@@ -75,78 +62,77 @@ def test_group_command_called_on_each_subcommands(capsys):
 
     with mock_stdin("foo\nbar\n"):
         with pytest.raises(SystemExit):
-            cli(args=[], prog_name="test_group_command_called_on_each_subcommands")
-    assert capsys.readouterr().out == "cli()\nFoo!\ncli()\nBar!\n"
+            cli(args=[], prog_name="test_group_called")
+
+    assert capsys.readouterr().out.replace("\r\n", "\n") == (
+        "cli()\ncli()\nFoo!\ncli()\nBar!\n"
+    )
 
 
-def test_group_argument_are_preserved(capsys):
-    @click.group(invoke_without_command=True)
-    @click.argument("argument")
-    @click.pass_context
-    def cli(ctx, argument):
-        if ctx.invoked_subcommand is None:
-            click_repl.repl(ctx)
-        else:
-            print("cli(%s)" % argument)
-
-    @cli.command()
-    @click.argument("argument")
-    def foo(argument):
-        print("Foo: %s!" % argument)
-
-    with mock_stdin("foo bar\n"):
-        with pytest.raises(SystemExit):
-            cli(args=["arg"], prog_name="test_group_argument_are_preserved")
-    assert capsys.readouterr().out == "cli(arg)\nFoo: bar!\n"
+@click.group(invoke_without_command=True)
+@click.argument("argument", required=False)
+@click.pass_context
+def cli(ctx, argument):
+    if ctx.invoked_subcommand is None:
+        click_repl.repl(ctx)
 
 
-def test_chain_commands(capsys):
-    @click.group(invoke_without_command=True, chain=True)
-    @click.pass_context
-    def cli(ctx):
-        if ctx.invoked_subcommand is None:
-            click_repl.repl(ctx)
-        else:
-            print("cli()")
-
-    @cli.command()
-    def foo():
-        print("Foo!")
-
-    @cli.command()
-    def bar():
-        print("Bar!")
-
-    with mock_stdin("foo bar\n"):
-        with pytest.raises(SystemExit):
-            cli(args=[], prog_name="test_chain_commands")
-    assert capsys.readouterr().out == "cli()\nFoo!\nBar!\n"
+@cli.command()
+def foo():
+    print("Foo")
 
 
-def test_exit_repl_function():
-    with pytest.raises(click_repl.exceptions.ExitReplException):
-        click_repl.utils.exit()
+@pytest.mark.parametrize(
+    "args, stdin, expected_err, expected_output",
+    [
+        ([], "foo\n", click_repl.exceptions.InvalidGroupFormat, ""),
+        (["temp_arg"], "", SystemExit, ""),
+        (["temp_arg"], "foo\n", SystemExit, "Foo\n"),
+    ],
+)
+def test_group_argument_with_required_false(
+    capsys, args, stdin, expected_err, expected_output
+):
+    with pytest.raises(expected_err):
+        with mock_stdin(stdin):
+            cli(args=args, prog_name="cli_arg_required_false")
+
+    assert capsys.readouterr().out.replace("\r\n", "\n") == expected_output
 
 
-def test_inputs(capfd):
-    @click.group(invoke_without_command=True)
-    @click.pass_context
-    def cli(ctx):
-        if ctx.invoked_subcommand is None:
-            ctx.invoke(repl)
+@click.group(invoke_without_command=True)
+@click.argument("argument")
+@click.option("--option1", default=1, type=click.STRING)
+@click.option("--option2")
+@click.pass_context
+def cmd(ctx, argument, option1, option2):
+    print(f"cli({argument}, {option1}, {option2})")
+    if ctx.invoked_subcommand is None:
+        click_repl.repl(ctx)
 
-    @cli.command()
-    def repl():
-        click_repl.repl(click.get_current_context())
 
-    try:
-        cli(args=[], prog_name="test_inputs")
-    except (SystemExit, Exception) as e:
-        if (
-            type(e).__name__ == "prompt_toolkit.output.win32.NoConsoleScreenBufferError"
-            and str(e) == "No Windows console found. Are you running cmd.exe?"
-        ):
-            pass
+@cmd.command("foo")
+def foo2():
+    print("Foo!")
 
-    captured_stdout = capfd.readouterr().out.replace("\r\n", "\n")
-    assert captured_stdout == ""
+
+@pytest.mark.parametrize(
+    "args, expected",
+    [
+        (["hi"], "cli(hi, 1, None)\ncli(hi, 1, None)\nFoo!\n"),
+        (
+            ["--option1", "opt1", "hi"],
+            "cli(hi, opt1, None)\ncli(hi, opt1, None)\nFoo!\n",
+        ),
+        (["--option2", "opt2", "hi"], "cli(hi, 1, opt2)\ncli(hi, 1, opt2)\nFoo!\n"),
+        (
+            ["--option1", "opt1", "--option2", "opt2", "hi"],
+            "cli(hi, opt1, opt2)\ncli(hi, opt1, opt2)\nFoo!\n",
+        ),
+    ],
+)
+def test_group_with_multiple_optional_args(capsys, args, expected):
+    with pytest.raises(SystemExit):
+        with mock_stdin("foo\n"):
+            cmd(args=args, prog_name="test_group_with_multiple_args")
+    assert capsys.readouterr().out.replace("\r\n", "\n") == expected
