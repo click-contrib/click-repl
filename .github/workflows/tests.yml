@@ -16,11 +16,11 @@ jobs:
 
       - name: Black Format Check
         run: |
-          black --check src tests
+          black --check click_repl tests
 
       - name: Flake8 Lint Check
         run: |
-          flake8 src tests
+          flake8 click_repl tests
 
   Test:
     needs: Lint
