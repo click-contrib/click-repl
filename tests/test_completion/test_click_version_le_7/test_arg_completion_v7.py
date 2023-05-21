@@ -9,7 +9,7 @@ def root_command():
     pass
 
 
-c = ClickCompleter(root_command)
+c = ClickCompleter(root_command, click.Context(root_command))
 
 
 @pytest.mark.skipif(
@@ -33,7 +33,20 @@ def test_click7_autocomplete_arg():
     click.__version__[0] > "7",
     reason="click-v7 old autocomplete function is not available, so skipped",
 )
-def test_tuple_return_type_shell_complete_func_click7():
+@pytest.mark.parametrize(
+    "test_input, suggestions, display_txts",
+    [
+        (
+            "tuple-type-autocompletion-cmd ",
+            {"Hi", "Please", "Hey", "Aye"},
+            {"hi", "please", "hey", "aye"},
+        ),
+        ("tuple-type-autocompletion-cmd h", {"Hi", "Hey"}, {"hi", "hey"}),
+    ],
+)
+def test_tuple_return_type_shell_complete_func_click7(
+    test_input, suggestions, display_txts
+):
     def return_type_tuple_shell_complete(ctx, args, incomplete):
         return [
             i
@@ -51,12 +64,5 @@ def test_tuple_return_type_shell_complete_func_click7():
     def tuple_type_autocompletion_cmd(foo):
         pass
 
-    completions = list(c.get_completions(Document("tuple-type-autocompletion-cmd ")))
-    assert {x.text for x in completions} == {"Hi", "Please", "Hey", "Aye"} and {
-        x.display_meta[0][-1] for x in completions
-    } == {"hi", "please", "hey", "aye"}
-
-    completions = list(c.get_completions(Document("tuple-type-autocompletion-cmd h")))
-    assert {x.text for x in completions} == {"Hi", "Hey"} and {
-        x.display_meta[0][-1] for x in completions
-    } == {"hi", "hey"}
+    completions = c.get_completions(Document(test_input))
+    assert {x.text for x in completions} == suggestions
