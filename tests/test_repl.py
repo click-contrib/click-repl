@@ -111,7 +111,7 @@ def cmd(ctx, argument, option1, option2):
         click_repl.repl(ctx)
 
 
-@cmd.command('foo')
+@cmd.command("foo")
 def foo2():
     print("Foo!")
 
