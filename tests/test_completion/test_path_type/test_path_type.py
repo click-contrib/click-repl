@@ -11,7 +11,7 @@ def root_command():
     pass
 
 
-c = ClickCompleter(root_command)
+c = ClickCompleter(root_command, click.Context(root_command))
 
 
 @pytest.mark.parametrize("test_input,expected", [

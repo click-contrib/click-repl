@@ -8,7 +8,7 @@ def root_command():
     pass
 
 
-c = ClickCompleter(root_command)
+c = ClickCompleter(root_command, click.Context(root_command))
 
 
 def test_boolean_arg():

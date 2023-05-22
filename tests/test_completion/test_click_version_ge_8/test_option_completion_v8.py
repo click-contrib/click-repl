@@ -9,7 +9,7 @@ def root_command():
     pass
 
 
-c = ClickCompleter(root_command)
+c = ClickCompleter(root_command, click.Context(root_command))
 
 with pytest.importorskip(
     "click.shell_complete.CompletionItem",
