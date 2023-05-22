@@ -9,6 +9,9 @@ class ExitReplException(InternalCommandException):
 class CommandLineParserError(Exception):
     pass
 
+class InvalidGroupFormat(Exception):
+    pass
+
 
 # Handle click.exceptions.Exit introduced in Click 7.0
 try:

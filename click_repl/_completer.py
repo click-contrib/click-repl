@@ -6,7 +6,7 @@ from glob import iglob
 import click
 from prompt_toolkit.completion import Completion, Completer
 
-from .utils import split_arg_string
+from .utils import _resolve_context, split_arg_string
 
 __all__ = ["ClickCompleter"]
 
@@ -31,11 +31,14 @@ def text_type(text):
 
 
 class ClickCompleter(Completer):
-    __slots__ = ("cli", "ctx")
+    __slots__ = ("cli", "ctx", "parsed_args", "parsed_ctx", "ctx_command")
 
-    def __init__(self, cli, ctx=None):
+    def __init__(self, cli, ctx):
         self.cli = cli
         self.ctx = ctx
+        self.parsed_args = []
+        self.parsed_ctx = ctx
+        self.ctx_command = ctx.command
 
     def _get_completion_from_autocompletion_functions(
         self,
@@ -249,33 +252,26 @@ class ClickCompleter(Completer):
             # command, so give all relevant completions for this context.
             incomplete = ""
 
-        # Resolve context based on click version
-        if HAS_CLICK_V8:
-            ctx = click.shell_completion._resolve_context(self.cli, {}, "", args)
-        else:
-            ctx = click._bashcomplete.resolve_ctx(self.cli, "", args)
+        if self.parsed_args != args:
+            self.parsed_args = args
+            self.parsed_ctx = _resolve_context(args, self.ctx)
+            self.ctx_command = self.parsed_ctx.command
 
-        # if ctx is None:
-        #     return  # type: ignore[unreachable]
-
-        autocomplete_ctx = self.ctx or ctx
-        ctx_command = ctx.command
-
-        if getattr(ctx_command, "hidden", False):
+        if getattr(self.ctx_command, "hidden", False):
             return
 
         try:
             choices.extend(
                 self._get_completion_for_cmd_args(
-                    ctx_command, incomplete, autocomplete_ctx, args
+                    self.ctx_command, incomplete, self.parsed_ctx, args
                 )
             )
 
-            if isinstance(ctx_command, click.MultiCommand):
+            if isinstance(self.ctx_command, click.MultiCommand):
                 incomplete_lower = incomplete.lower()
 
-                for name in ctx_command.list_commands(ctx):
-                    command = ctx_command.get_command(ctx, name)
+                for name in self.ctx_command.list_commands(self.parsed_ctx):
+                    command = self.ctx_command.get_command(self.parsed_ctx, name)
                     if getattr(command, "hidden", False):
                         continue
 
