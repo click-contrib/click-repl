@@ -109,13 +109,15 @@ def repl(
             break
 
         try:
-            # The group command will dispatch based on args.
-            old_protected_args = group_ctx.protected_args
-            try:
-                group_ctx.protected_args = args
-                group.invoke(group_ctx)
-            finally:
-                group_ctx.protected_args = old_protected_args
+            # default_map passes the top-level params to the new group to
+            # support top-level required params that would reject the
+            # invocation if missing.
+            with group.make_context(
+                None, args, parent=group_ctx, default_map=old_ctx.params
+            ) as ctx:
+                group.invoke(ctx)
+                ctx.exit()
+
         except click.ClickException as e:
             e.show()
         except (ClickExit, SystemExit):
