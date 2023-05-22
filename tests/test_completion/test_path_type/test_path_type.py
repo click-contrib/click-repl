@@ -14,16 +14,19 @@ def root_command():
 c = ClickCompleter(root_command, click.Context(root_command))
 
 
-@pytest.mark.parametrize("test_input,expected", [
-    ("path-type-arg ", glob.glob("*")),
-    ("path-type-arg tests/", glob.glob('tests/*')),
-    ("path-type-arg src/*", []),
-    ("path-type-arg src/**", []),
-    (
-        "path-type-arg tests/testdir/",
-        glob.glob("tests/testdir/*"),
-    )
-])
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ("path-type-arg ", glob.glob("*")),
+        ("path-type-arg tests/", glob.glob("tests/*")),
+        ("path-type-arg src/*", []),
+        ("path-type-arg src/**", []),
+        (
+            "path-type-arg tests/testdir/",
+            glob.glob("tests/testdir/*"),
+        ),
+    ],
+)
 def test_path_type_arg(test_input, expected):
     @root_command.command()
     @click.argument("path", type=click.Path())

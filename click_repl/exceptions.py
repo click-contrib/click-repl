@@ -9,6 +9,7 @@ class ExitReplException(InternalCommandException):
 class CommandLineParserError(Exception):
     pass
 
+
 class InvalidGroupFormat(Exception):
     pass
 
