@@ -7,7 +7,7 @@ from prompt_toolkit.history import InMemoryHistory
 
 from ._completer import ClickCompleter
 from .exceptions import ClickExit  # type: ignore[attr-defined]
-from .exceptions import CommandLineParserError, ExitReplException
+from .exceptions import CommandLineParserError, ExitReplException, InvalidGroupFormat
 from .utils import _execute_internal_and_sys_cmds
 
 
@@ -29,7 +29,7 @@ def bootstrap_prompt(
     defaults = {
         "history": InMemoryHistory(),
         "completer": ClickCompleter(group, ctx=ctx),
-        "message": u"> ",
+        "message": "> ",
     }
 
     defaults.update(prompt_kwargs)
@@ -49,9 +49,30 @@ def repl(
     If stdin is not a TTY, no prompt will be printed, but only commands read
     from stdin.
     """
-    # parent should be available, but we're not going to bother if not
-    group_ctx = old_ctx.parent or old_ctx
+
+    group_ctx = old_ctx
+    # Switching to the parent context that has a Group as its command
+    # as a Group acts as a CLI for all of its subcommands
+    if old_ctx.parent is not None and not isinstance(old_ctx.command, click.Group):
+        group_ctx = old_ctx.parent
+
     group = group_ctx.command
+
+    # An Optional click.Argument in the CLI Group, that has no value
+    # will consume the first word from the REPL input, causing issues in
+    # executing the command
+    # So, if there's an empty Optional Argument
+    for param in group.params:
+        if (
+            isinstance(param, click.Argument)
+            and group_ctx.params[param.name] is None
+            and not param.required
+        ):
+            raise InvalidGroupFormat(
+                f"{type(group).__name__} '{group.name}' requires value for "
+                f"an optional argument '{param.name}' in REPL mode"
+            )
+
     isatty = sys.stdin.isatty()
 
     # Delete the REPL command from those available, as we don't want to allow
@@ -71,8 +92,6 @@ def repl(
 
     if isatty:
         prompt_kwargs = bootstrap_prompt(group, prompt_kwargs, group_ctx)
-
-    if isatty:
         session = PromptSession(**prompt_kwargs)
 
         def get_command():

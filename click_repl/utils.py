@@ -12,6 +12,7 @@ __all__ = [
     "_exit_internal",
     "_get_registered_target",
     "_help_internal",
+    "_resolve_context",
     "_register_internal_command",
     "dispatch_repl_commands",
     "handle_internal_commands",
@@ -26,6 +27,52 @@ if sys.version_info >= (3, 3):
     from collections.abc import Iterable, Mapping  # noqa: F811
 else:
     from collections import Iterable, Mapping
+
+
+def _resolve_context(args, ctx=None):
+    """Produce the context hierarchy starting with the command and
+    traversing the complete arguments. This only follows the commands,
+    it doesn't trigger input prompts or callbacks.
+
+    :param args: List of complete args before the incomplete value.
+    :param cli_ctx: `click.Context` object of the CLI group
+    """
+
+    while args:
+        command = ctx.command
+
+        if isinstance(command, click.MultiCommand):
+            if not command.chain:
+                name, cmd, args = command.resolve_command(ctx, args)
+
+                if cmd is None:
+                    return ctx
+
+                ctx = cmd.make_context(name, args, parent=ctx, resilient_parsing=True)
+                args = ctx.protected_args + ctx.args
+            else:
+                while args:
+                    name, cmd, args = command.resolve_command(ctx, args)
+
+                    if cmd is None:
+                        return ctx
+
+                    sub_ctx = cmd.make_context(
+                        name,
+                        args,
+                        parent=ctx,
+                        allow_extra_args=True,
+                        allow_interspersed_args=False,
+                        resilient_parsing=True,
+                    )
+                    args = sub_ctx.args
+
+                ctx = sub_ctx
+                args = [*sub_ctx.protected_args, *sub_ctx.args]
+        else:
+            break
+
+    return ctx
 
 
 _internal_commands = {}
