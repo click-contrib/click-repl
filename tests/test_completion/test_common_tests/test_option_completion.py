@@ -76,3 +76,28 @@ def test_only_unused_with_multiple_option():
 
     completions = list(c.get_completions(Document("multiple-option -u t ")))
     assert {x.text for x in completions} == {"-u"}
+
+
+def test_shortest_only_mode():
+    @root_command.command()
+    @click.option("--foo", "-f", is_flag=True)
+    @click.option("-b", "--bar", is_flag=True)
+    @click.option("--foobar", is_flag=True)
+    def shortest_only(foo, bar, foobar):
+        pass
+
+    c.shortest_only = True
+
+    completions = list(c.get_completions(Document("shortest-only ")))
+    assert {x.text for x in completions} == {"-f", "-b", "--foobar"}
+
+    completions = list(c.get_completions(Document("shortest-only -")))
+    assert {x.text for x in completions} == {"-f", "--foo", "-b", "--bar", "--foobar"}
+
+    completions = list(c.get_completions(Document("shortest-only --f")))
+    assert {x.text for x in completions} == {"--foo", "--foobar"}
+
+    c.shortest_only = False
+
+    completions = list(c.get_completions(Document("shortest-only ")))
+    assert {x.text for x in completions} == {"-f", "--foo", "-b", "--bar", "--foobar"}
