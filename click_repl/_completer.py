@@ -213,9 +213,9 @@ class ClickCompleter(Completer):
 
                 # Show only shortest opt
                 if (self.shortest_only
-                        and not incomplete        # just typed a space
-                        and args[-1] not in opts  # not selecting a value for a longer version of this option
-                ):
+                        and not incomplete  # just typed a space
+                        # not selecting a value for a longer version of this option
+                        and args[-1] not in opts):
                     opts = [min(opts, key=len)]
 
                 for option in opts:
