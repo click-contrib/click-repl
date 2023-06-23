@@ -33,12 +33,13 @@ def text_type(text):
 class ClickCompleter(Completer):
     __slots__ = ("cli", "ctx", "parsed_args", "parsed_ctx", "ctx_command")
 
-    def __init__(self, cli, ctx):
+    def __init__(self, cli, ctx, show_only_unused=False):
         self.cli = cli
         self.ctx = ctx
         self.parsed_args = []
         self.parsed_ctx = ctx
         self.ctx_command = ctx.command
+        self.show_only_unused = show_only_unused
 
     def _get_completion_from_autocompletion_functions(
         self,
@@ -206,6 +207,7 @@ class ClickCompleter(Completer):
                 already_present = any([
                     opt in previous_args for opt in opts
                 ])
+                hide = self.show_only_unused and already_present and not param.multiple
 
                 for option in opts:
                     # We want to make sure if this parameter was called
@@ -215,7 +217,7 @@ class ClickCompleter(Completer):
                         param_called = True
                         break
 
-                    elif option.startswith(incomplete) and not (already_present and not param.multiple):
+                    elif option.startswith(incomplete) and not hide:
                         choices.append(
                             Completion(
                                 text_type(option),

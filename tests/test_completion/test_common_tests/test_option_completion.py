@@ -34,27 +34,41 @@ def test_boolean_option():
     assert {x.text for x in completions} == {"true"}
 
 
-def test_unique_option():
+def test_only_unused_with_unique_option():
     @root_command.command()
     @click.option("-u", type=click.BOOL)
-    def bool_option(foo):
+    def unique_option(u):
         pass
 
-    completions = list(c.get_completions(Document("bool-option ")))
+    c.show_only_unused = True
+
+    completions = list(c.get_completions(Document("unique-option ")))
     assert {x.text for x in completions} == {"-u"}
 
-    completions = list(c.get_completions(Document("bool-option -u t ")))
+    completions = list(c.get_completions(Document("unique-option -u t ")))
     assert len(completions) == 0
 
+    c.show_only_unused = False
 
-def test_multiple_option():
-    @root_command.command()
-    @click.option("-u", type=click.BOOL, multiple=True)
-    def bool_option(foo):
-        pass
-
-    completions = list(c.get_completions(Document("bool-option ")))
+    completions = list(c.get_completions(Document("unique-option -u t ")))
     assert {x.text for x in completions} == {"-u"}
 
-    completions = list(c.get_completions(Document("bool-option -u t ")))
+
+def test_only_unused_with_multiple_option():
+    @root_command.command()
+    @click.option("-u", type=click.BOOL, multiple=True)
+    def multiple_option(u):
+        pass
+
+    c.show_only_unused = True
+
+    completions = list(c.get_completions(Document("multiple-option ")))
+    assert {x.text for x in completions} == {"-u"}
+
+    completions = list(c.get_completions(Document("multiple-option -u t ")))
+    assert {x.text for x in completions} == {"-u"}
+
+    c.show_only_unused = False
+
+    completions = list(c.get_completions(Document("multiple-option -u t ")))
     assert {x.text for x in completions} == {"-u"}
