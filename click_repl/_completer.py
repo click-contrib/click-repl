@@ -230,6 +230,7 @@ class ClickCompleter(Completer):
                     choices = self._get_completion_from_params(
                         autocomplete_ctx, args, param, incomplete
                     )
+                    break
 
             elif isinstance(param, click.Argument):
                 choices.extend(
