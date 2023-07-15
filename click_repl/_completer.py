@@ -33,13 +33,14 @@ def text_type(text):
 class ClickCompleter(Completer):
     __slots__ = ("cli", "ctx", "parsed_args", "parsed_ctx", "ctx_command")
 
-    def __init__(self, cli, ctx, show_only_unused=False):
+    def __init__(self, cli, ctx, show_only_unused=False, shortest_only=False):
         self.cli = cli
         self.ctx = ctx
         self.parsed_args = []
         self.parsed_ctx = ctx
         self.ctx_command = ctx.command
         self.show_only_unused = show_only_unused
+        self.shortest_only = shortest_only
 
     def _get_completion_from_autocompletion_functions(
         self,
@@ -204,10 +205,18 @@ class ClickCompleter(Completer):
                 previous_args = args[: param.nargs * -1]
                 current_args = args[param.nargs * -1 :]
 
+                # Show only unused opts
                 already_present = any([
                     opt in previous_args for opt in opts
                 ])
                 hide = self.show_only_unused and already_present and not param.multiple
+
+                # Show only shortest opt
+                if (self.shortest_only
+                        and not incomplete  # just typed a space
+                        # not selecting a value for a longer version of this option
+                        and args[-1] not in opts):
+                    opts = [min(opts, key=len)]
 
                 for option in opts:
                     # We want to make sure if this parameter was called
