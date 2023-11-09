@@ -274,7 +274,10 @@ class ClickCompleter(Completer):
 
         if self.parsed_args != args:
             self.parsed_args = args
-            self.parsed_ctx = _resolve_context(args, self.ctx)
+            try:
+                self.parsed_ctx = _resolve_context(args, self.ctx)
+            except Exception:
+                return [] # autocompletion for nonexistent cmd can throw here
             self.ctx_command = self.parsed_ctx.command
 
         if getattr(self.ctx_command, "hidden", False):
