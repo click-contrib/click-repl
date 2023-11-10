@@ -9,12 +9,12 @@ def cli():
     pass
 
 
-@cli.group
+@cli.group()
 def cmd():
     pass
 
 
-@cmd.command
+@cmd.command()
 def subcmd():
     pass
 
@@ -29,7 +29,7 @@ class Test_Command_Autocompletion(TestCase):
 
     def test_not_valid_subcmd(self):
         try:
-            completions = list(self.c.get_completions(Document("not cmd")))
+            res = list(self.c.get_completions(Document("not cmd")))
         except Exception as e:
             self.fail(f"Autocompletion raised exception: {e}")
-        self.assertListEqual(completions, [])
+        self.assertListEqual(res, [])
