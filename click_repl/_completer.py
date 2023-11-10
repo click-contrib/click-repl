@@ -277,7 +277,7 @@ class ClickCompleter(Completer):
             try:
                 self.parsed_ctx = _resolve_context(args, self.ctx)
             except Exception:
-                return [] # autocompletion for nonexistent cmd can throw here
+                return []  # autocompletion for nonexistent cmd can throw here
             self.ctx_command = self.parsed_ctx.command
 
         if getattr(self.ctx_command, "hidden", False):
