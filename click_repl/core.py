@@ -56,7 +56,8 @@ class ReplContext:
         The click context object that belong to the CLI/parent Group.
 
     prompt_kwargs
-        Extra keyword arguments for :class:`~prompt_toolkit.shortcuts.PromptSession` class.
+        Extra keyword arguments for
+        :class:`~prompt_toolkit.shortcuts.PromptSession` class.
 
     parent
         REPL Context object of the parent REPL session, if exists. Otherwise, :obj:`None`.
