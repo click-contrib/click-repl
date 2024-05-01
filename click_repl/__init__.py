@@ -7,5 +7,6 @@ from .exceptions import (  # noqa: F401
     InternalCommandException as InternalCommandException,
 )
 from .utils import exit as exit  # noqa: F401
+from .core import pass_context as pass_context
 
 __version__ = "0.3.0"

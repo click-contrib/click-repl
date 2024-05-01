@@ -2,13 +2,14 @@ from __future__ import with_statement
 
 import click
 import sys
-from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
 
 from ._completer import ClickCompleter
 from .exceptions import ClickExit  # type: ignore[attr-defined]
 from .exceptions import CommandLineParserError, ExitReplException, InvalidGroupFormat
 from .utils import _execute_internal_and_sys_cmds
+from .core import ReplContext
+from .globals_ import ISATTY, get_current_repl_ctx
 
 
 __all__ = ["bootstrap_prompt", "register_repl", "repl"]
@@ -90,58 +91,67 @@ def repl(
 
     original_command = available_commands.pop(repl_command_name, None)
 
-    if isatty:
-        prompt_kwargs = bootstrap_prompt(group, prompt_kwargs, group_ctx)
-        session = PromptSession(**prompt_kwargs)
+    repl_ctx = ReplContext(
+        group_ctx,
+        bootstrap_prompt(group, prompt_kwargs, group_ctx),
+        get_current_repl_ctx(silent=True)
+    )
 
-        def get_command():
-            return session.prompt()
+    if ISATTY:
+        # If stdin is a TTY, prompt the user for input using PromptSession.
+        def get_command() -> str:
+            return repl_ctx.session.prompt()  # type: ignore
 
     else:
-        get_command = sys.stdin.readline
+        # If stdin is not a TTY, read input from stdin directly.
+        def get_command() -> str:
+            inp = sys.stdin.readline().strip()
+            repl_ctx._history.append(inp)
+            return inp
 
-    while True:
-        try:
-            command = get_command()
-        except KeyboardInterrupt:
-            continue
-        except EOFError:
-            break
-
-        if not command:
-            if isatty:
+    with repl_ctx:
+        while True:
+            try:
+                command = get_command()
+            except KeyboardInterrupt:
                 continue
-            else:
+            except EOFError:
                 break
 
-        try:
-            args = _execute_internal_and_sys_cmds(
-                command, allow_internal_commands, allow_system_commands
-            )
-            if args is None:
+            if not command:
+                if isatty:
+                    continue
+                else:
+                    break
+
+            try:
+                args = _execute_internal_and_sys_cmds(
+                    command, allow_internal_commands, allow_system_commands
+                )
+                if args is None:
+                    continue
+
+            except CommandLineParserError:
                 continue
 
-        except CommandLineParserError:
-            continue
+            except ExitReplException:
+                break
 
-        except ExitReplException:
-            break
-
-        try:
-            # The group command will dispatch based on args.
-            old_protected_args = group_ctx.protected_args
             try:
-                group_ctx.protected_args = args
-                group.invoke(group_ctx)
-            finally:
-                group_ctx.protected_args = old_protected_args
-        except click.ClickException as e:
-            e.show()
-        except (ClickExit, SystemExit):
-            pass
+                # The group command will dispatch based on args.
+                old_protected_args = group_ctx.protected_args
+                try:
+                    group_ctx.protected_args = args
+                    group.invoke(group_ctx)
+                finally:
+                    group_ctx.protected_args = old_protected_args
+            except click.ClickException as e:
+                e.show()
+            except (ClickExit, SystemExit):
+                pass
 
-        except ExitReplException:
-            break
+            except ExitReplException:
+                break
 
     if original_command is not None:
         available_commands[repl_command_name] = original_command
