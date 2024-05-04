@@ -206,16 +206,16 @@ class ClickCompleter(Completer):
                 current_args = args[param.nargs * -1 :]
 
                 # Show only unused opts
-                already_present = any([
-                    opt in previous_args for opt in opts
-                ])
+                already_present = any([opt in previous_args for opt in opts])
                 hide = self.show_only_unused and already_present and not param.multiple
 
                 # Show only shortest opt
-                if (self.shortest_only
-                        and not incomplete  # just typed a space
-                        # not selecting a value for a longer version of this option
-                        and args[-1] not in opts):
+                if (
+                    self.shortest_only
+                    and not incomplete  # just typed a space
+                    # not selecting a value for a longer version of this option
+                    and args[-1] not in opts
+                ):
                     opts = [min(opts, key=len)]
 
                 for option in opts:
