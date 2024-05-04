@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, NoReturn
 
 from ._ctx_stack import _context_stack
 
 if TYPE_CHECKING:
     from .core import ReplContext
+
+
+ISATTY = sys.stdin.isatty()
 
 
 def get_current_repl_ctx(silent: bool = False) -> ReplContext | NoReturn | None:

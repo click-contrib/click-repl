@@ -13,7 +13,7 @@ from prompt_toolkit import PromptSession
 from typing_extensions import Concatenate, Final, ParamSpec, TypeAlias, TypedDict
 
 from ._ctx_stack import _pop_context, _push_context
-from .globals_ import get_current_repl_ctx
+from .globals_ import ISATTY, get_current_repl_ctx
 
 if TYPE_CHECKING:
     from prompt_toolkit.formatted_text import AnyFormattedText
@@ -26,7 +26,6 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 __all__ = ["ReplContext", "pass_context"]
 
-ISATTY = sys.stdin.isatty()
 
 _PromptSession: TypeAlias = PromptSession[Dict[str, Any]]
 

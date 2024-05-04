@@ -9,13 +9,10 @@ from .exceptions import ClickExit  # type: ignore[attr-defined]
 from .exceptions import CommandLineParserError, ExitReplException, InvalidGroupFormat
 from .utils import _execute_internal_and_sys_cmds
 from .core import ReplContext
-from .globals_ import get_current_repl_ctx
+from .globals_ import ISATTY, get_current_repl_ctx
 
 
 __all__ = ["bootstrap_prompt", "register_repl", "repl"]
-
-
-ISATTY = sys.stdin.isatty()
 
 
 def bootstrap_prompt(
@@ -77,8 +74,6 @@ def repl(
                 f"an optional argument '{param.name}' in REPL mode"
             )
 
-    isatty = sys.stdin.isatty()
-
     # Delete the REPL command from those available, as we don't want to allow
     # nesting REPLs (note: pass `None` to `pop` as we don't want to error if
     # REPL command already not present for some reason).
@@ -122,7 +117,7 @@ def repl(
                 break
 
             if not command:
-                if isatty:
+                if ISATTY:
                     continue
                 else:
                     break
