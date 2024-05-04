@@ -4,7 +4,6 @@ Core functionalities for managing context of the click_repl app.
 
 from __future__ import annotations
 
-import sys
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Dict, Generator, TypeVar
 
