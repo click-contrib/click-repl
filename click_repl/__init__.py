@@ -1,4 +1,5 @@
 from ._completer import ClickCompleter as ClickCompleter  # noqa: F401
+from .core import pass_context as pass_context  # noqa: F401
 from ._repl import register_repl as register_repl  # noqa: F401
 from ._repl import repl as repl  # noqa: F401
 from .exceptions import CommandLineParserError as CommandLineParserError  # noqa: F401
