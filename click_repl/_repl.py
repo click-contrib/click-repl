@@ -1,29 +1,30 @@
-from __future__ import with_statement
+from __future__ import annotations
+
+import sys
+from typing import Any, MutableMapping, cast
 
 import click
-import sys
 from prompt_toolkit.history import InMemoryHistory
 
 from ._completer import ClickCompleter
+from .core import ReplContext
 from .exceptions import ClickExit  # type: ignore[attr-defined]
 from .exceptions import CommandLineParserError, ExitReplException, InvalidGroupFormat
-from .utils import _execute_internal_and_sys_cmds
-from .core import ReplContext
 from .globals_ import ISATTY, get_current_repl_ctx
-
+from .utils import _execute_internal_and_sys_cmds
 
 __all__ = ["bootstrap_prompt", "register_repl", "repl"]
 
 
 def bootstrap_prompt(
-    group,
-    prompt_kwargs,
-    ctx=None,
-):
+    group: click.MultiCommand,
+    prompt_kwargs: dict[str, Any],
+    ctx: click.Context,
+) -> dict[str, Any]:
     """
     Bootstrap prompt_toolkit kwargs or use user defined values.
 
-    :param group: click Group
+    :param group: click.MultiCommand object
     :param prompt_kwargs: The user specified prompt kwargs.
     """
 
@@ -38,8 +39,11 @@ def bootstrap_prompt(
 
 
 def repl(
-    old_ctx, prompt_kwargs={}, allow_system_commands=True, allow_internal_commands=True
-):
+    old_ctx: click.Context,
+    prompt_kwargs: dict[str, Any] = {},
+    allow_system_commands: bool = True,
+    allow_internal_commands: bool = True,
+) -> None:
     """
     Start an interactive shell. All subcommands are available in it.
 
@@ -54,10 +58,12 @@ def repl(
     group_ctx = old_ctx
     # Switching to the parent context that has a Group as its command
     # as a Group acts as a CLI for all of its subcommands
-    if old_ctx.parent is not None and not isinstance(old_ctx.command, click.Group):
+    if old_ctx.parent is not None and not isinstance(
+        old_ctx.command, click.MultiCommand
+    ):
         group_ctx = old_ctx.parent
 
-    group = group_ctx.command
+    group = cast(click.MultiCommand, group_ctx.command)
 
     # An Optional click.Argument in the CLI Group, that has no value
     # will consume the first word from the REPL input, causing issues in
@@ -66,7 +72,7 @@ def repl(
     for param in group.params:
         if (
             isinstance(param, click.Argument)
-            and group_ctx.params[param.name] is None
+            and group_ctx.params[param.name] is None  # type: ignore[index]
             and not param.required
         ):
             raise InvalidGroupFormat(
@@ -78,16 +84,20 @@ def repl(
     # nesting REPLs (note: pass `None` to `pop` as we don't want to error if
     # REPL command already not present for some reason).
     repl_command_name = old_ctx.command.name
-    if isinstance(group_ctx.command, click.CommandCollection):
-        available_commands = {
-            cmd_name: cmd_obj
-            for source in group_ctx.command.sources
-            for cmd_name, cmd_obj in source.commands.items()
-        }
-    else:
-        available_commands = group_ctx.command.commands
 
-    original_command = available_commands.pop(repl_command_name, None)
+    available_commands: MutableMapping[str, click.Command] = {}
+
+    if isinstance(group, click.CommandCollection):
+        available_commands = {
+            cmd_name: source.get_command(group_ctx, cmd_name)  # type: ignore[misc]
+            for source in group.sources
+            for cmd_name in source.list_commands(group_ctx)
+        }
+
+    elif isinstance(group, click.Group):
+        available_commands = group.commands
+
+    original_command = available_commands.pop(repl_command_name, None)  # type: ignore
 
     repl_ctx = ReplContext(
         group_ctx,
@@ -152,9 +162,9 @@ def repl(
                 break
 
     if original_command is not None:
-        available_commands[repl_command_name] = original_command
+        available_commands[repl_command_name] = original_command  # type: ignore[index]
 
 
-def register_repl(group, name="repl"):
+def register_repl(group: click.Group, name="repl") -> None:
     """Register :func:`repl()` as sub-command *name* of *group*."""
     group.command(name=name)(click.pass_context(repl))

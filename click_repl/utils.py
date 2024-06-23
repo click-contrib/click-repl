@@ -1,10 +1,18 @@
-import click
+from __future__ import annotations
+
 import os
 import shlex
-import sys
+import typing as t
 from collections import defaultdict
+from typing import Callable, Generator, Iterator, NoReturn, Sequence
+
+import click
+from typing_extensions import TypeAlias
 
 from .exceptions import CommandLineParserError, ExitReplException
+
+T = t.TypeVar("T")
+InternalCommandCallback: TypeAlias = Callable[[], None]
 
 
 __all__ = [
@@ -21,15 +29,7 @@ __all__ = [
 ]
 
 
-# Abstract datatypes in collections module are moved to collections.abc
-# module in Python 3.3
-if sys.version_info >= (3, 3):
-    from collections.abc import Iterable, Mapping  # noqa: F811
-else:
-    from collections import Iterable, Mapping
-
-
-def _resolve_context(args, ctx=None):
+def _resolve_context(args: list[str], ctx: click.Context) -> click.Context:
     """Produce the context hierarchy starting with the command and
     traversing the complete arguments. This only follows the commands,
     it doesn't trigger input prompts or callbacks.
@@ -75,10 +75,10 @@ def _resolve_context(args, ctx=None):
     return ctx
 
 
-_internal_commands = {}
+_internal_commands: dict[str, tuple[InternalCommandCallback, str | None]] = {}
 
 
-def split_arg_string(string, posix=True):
+def split_arg_string(string: str, posix: bool = True) -> list[str]:
     """Split an argument string as with :func:`shlex.split`, but don't
     fail if the string is incomplete. Ignores a missing closing quote or
     incomplete escape sequence and uses the partial token as-is.
@@ -107,16 +107,20 @@ def split_arg_string(string, posix=True):
     return out
 
 
-def _register_internal_command(names, target, description=None):
+def _register_internal_command(
+    names: str | Sequence[str] | Generator[str, None, None] | Iterator[str],
+    target: InternalCommandCallback,
+    description: str | None = None,
+) -> None:
     if not hasattr(target, "__call__"):
         raise ValueError("Internal command must be a callable")
 
     if isinstance(names, str):
         names = [names]
 
-    elif isinstance(names, Mapping) or not isinstance(names, Iterable):
+    elif not isinstance(names, (Sequence, Generator, Iterator)):
         raise ValueError(
-            '"names" must be a string, or an iterable object, but got "{}"'.format(
+            '"names" must be a string, or a Sequence of strings, but got "{}"'.format(
                 type(names).__name__
             )
         )
@@ -125,18 +129,20 @@ def _register_internal_command(names, target, description=None):
         _internal_commands[name] = (target, description)
 
 
-def _get_registered_target(name, default=None):
-    target_info = _internal_commands.get(name)
+def _get_registered_target(
+    name: str, default: T | None = None
+) -> InternalCommandCallback | T | None:
+    target_info = _internal_commands.get(name, None)
     if target_info:
         return target_info[0]
     return default
 
 
-def _exit_internal():
+def _exit_internal() -> NoReturn:
     raise ExitReplException()
 
 
-def _help_internal():
+def _help_internal() -> None:
     formatter = click.HelpFormatter()
     formatter.write_heading("REPL help")
     formatter.indent()
@@ -169,10 +175,10 @@ _register_internal_command(
 
 
 def _execute_internal_and_sys_cmds(
-    command,
-    allow_internal_commands=True,
-    allow_system_commands=True,
-):
+    command: str,
+    allow_internal_commands: bool = True,
+    allow_system_commands: bool = True,
+) -> list[str] | None:
     """
     Executes internal, system, and all the other registered click commands from the input
     """
@@ -189,12 +195,12 @@ def _execute_internal_and_sys_cmds(
         raise CommandLineParserError("{}".format(e))
 
 
-def exit():
+def exit() -> NoReturn:
     """Exit the repl"""
     _exit_internal()
 
 
-def dispatch_repl_commands(command):
+def dispatch_repl_commands(command: str) -> bool:
     """
     Execute system commands entered in the repl.
 
@@ -207,7 +213,7 @@ def dispatch_repl_commands(command):
     return False
 
 
-def handle_internal_commands(command):
+def handle_internal_commands(command: str) -> None:
     """
     Run repl-internal commands.
 
