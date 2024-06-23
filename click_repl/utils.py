@@ -159,8 +159,7 @@ def _help_internal():
             for description, mnemonics in info_table.items()
         )
 
-    val = formatter.getvalue()  # type: str
-    return val
+    print(formatter.getvalue())
 
 
 _register_internal_command(["q", "quit", "exit"], _exit_internal, "exits the repl")
@@ -180,11 +179,9 @@ def _execute_internal_and_sys_cmds(
     if allow_system_commands and dispatch_repl_commands(command):
         return None
 
-    if allow_internal_commands:
-        result = handle_internal_commands(command)
-        if isinstance(result, str):
-            click.echo(result)
-            return None
+    if allow_internal_commands and command.startswith(":"):
+        handle_internal_commands(command)
+        return None
 
     try:
         return split_arg_string(command)
@@ -216,7 +213,6 @@ def handle_internal_commands(command):
 
     Repl-internal commands are all commands starting with ":".
     """
-    if command.startswith(":"):
-        target = _get_registered_target(command[1:], default=None)
-        if target:
-            return target()
+    target = _get_registered_target(command[1:], default=None)
+    if target:
+        target()
