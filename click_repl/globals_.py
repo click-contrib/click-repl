@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, NoReturn
+from typing import TYPE_CHECKING, NoReturn, overload
 
 from ._ctx_stack import _context_stack
 
@@ -10,6 +10,16 @@ if TYPE_CHECKING:
 
 
 ISATTY = sys.stdin.isatty()
+
+
+@overload
+def get_current_repl_ctx() -> ReplContext | NoReturn:
+    ...
+
+
+@overload
+def get_current_repl_ctx(silent: bool = False) -> ReplContext | NoReturn | None:
+    ...
 
 
 def get_current_repl_ctx(silent: bool = False) -> ReplContext | NoReturn | None:
