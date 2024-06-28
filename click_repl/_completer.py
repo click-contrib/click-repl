@@ -155,7 +155,6 @@ class ClickCompleter(Completer):
         ]
 
     def _get_completion_from_params(self, autocomplete_ctx, args, param, incomplete):
-
         choices = []
         param_type = param.type
 
