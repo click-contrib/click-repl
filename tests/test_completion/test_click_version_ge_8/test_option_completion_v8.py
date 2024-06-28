@@ -56,12 +56,8 @@ with pytest.importorskip(
         def autocompletion_cmd2(handler):
             pass
 
-        completions = list(
-            c.get_completions(Document("autocompletion-cmd2 --handler "))
-        )
+        completions = list(c.get_completions(Document("autocompletion-cmd2 --handler ")))
         assert {x.text for x in completions} == {"foo", "bar"}
 
-        completions = list(
-            c.get_completions(Document("autocompletion-cmd2 --handler "))
-        )
+        completions = list(c.get_completions(Document("autocompletion-cmd2 --handler ")))
         assert {x.text for x in completions} == {"foo", "bar"}

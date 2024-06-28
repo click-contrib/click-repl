@@ -44,9 +44,7 @@ def test_args_of_hidden_command():
     completions = list(c.get_completions(Document("args-choices-hidden-cmd foo ")))
     assert {x.text for x in completions} == set()
 
-    completions = list(
-        c.get_completions(Document("args-choices-hidden-cmd --handler "))
-    )
+    completions = list(c.get_completions(Document("args-choices-hidden-cmd --handler ")))
     assert {x.text for x in completions} == set()
 
 

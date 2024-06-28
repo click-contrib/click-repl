@@ -76,7 +76,7 @@ def myrepl():
         'history': FileHistory('/etc/myrepl/myrepl-history'),
     }
     repl(click.get_current_context(), prompt_kwargs=prompt_kwargs)
-    
+
 cli()
 ```
 And then your custom `myrepl` command will be available on your CLI, which

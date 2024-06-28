@@ -25,7 +25,5 @@ def test_click7_autocomplete_option():
     def autocompletion_opt_cmd2(handler):
         pass
 
-    completions = list(
-        c.get_completions(Document("autocompletion-opt-cmd2 --handler "))
-    )
+    completions = list(c.get_completions(Document("autocompletion-opt-cmd2 --handler ")))
     assert {x.text for x in completions} == {"foo", "bar"}
