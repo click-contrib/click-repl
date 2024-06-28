@@ -54,3 +54,58 @@ addopts = [
 testpaths = [
     "tests",
 ]
+
+[tool.ruff]
+line-length = 90
+
+[tool.ruff.lint]
+select = [
+    "F", # pyflakes
+    "W", # pycodestyle-warnings
+    "E", # pycodestyle-errors
+#    "I", # isort
+#    "N", # pep8-naming
+#    "D", # pydocstyle
+#    "UP", # pyupgrade
+#    "YTT", # flake8-2020
+#    "ANN", # flake8-annotations
+#    "S", # flake8-banditF
+#    "FBT", # flake8-boolean-trap
+#    "B", # flake8-bugbear
+#    "A", # flake8-builtins
+#    "COM", # flake8-comma
+#    "C4", # flake8-comprehensions
+#    "EM", # flake8-errmsg
+#    "FA", # flake8-future-annotations
+    "ISC", # flake8-implicit-str-concat
+    "ICN", # flake8-import-conventions
+#    "G", # flake8-logging-format
+    "PIE", # flake8-pie
+#    "T20", # flake8-print
+#    "PYI", # flake8-pyi
+#    "PT", # flake8-pytest-style
+#    "Q", # flake8-quotes
+#    "RSE", # flake8-raise
+#    "RET", # flake8-return
+#    "SLF", # flake8-self
+#    "SIM", # flake8-simplify
+#    "TID", # flake8-tidy-imports
+#    "TCH", # flake8-type-checking
+#    "ARG", # flake8-unused-arguments
+#    "PTH", # flake8-use-pathlib
+#    "TD", # flake8-todos
+#    "ERA", # eradicate
+#    "PGH", # pygrep-hooks
+#    "PL", # pylint
+#    "TRY", # tryceratops
+#    "FLY", # flynt
+#    "PERF", # perflint
+#    "FURB", # refurb
+#    "RUF", # Ruff-specific
+]
+ignore = [
+    "E203", "E266", "E402", "E731", "C901",
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 18
