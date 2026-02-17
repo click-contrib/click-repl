@@ -9,7 +9,7 @@ def test_command_collection():
     def foo_group():
         pass
 
-    @foo_group.command()
+    @foo_group.command(name="foo-cmd")
     def foo_cmd():
         pass
 
@@ -17,7 +17,7 @@ def test_command_collection():
     def foobar_group():
         pass
 
-    @foobar_group.command()
+    @foobar_group.command(name="foobar-cmd")
     def foobar_cmd():
         pass
 

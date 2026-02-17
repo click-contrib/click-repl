@@ -28,12 +28,12 @@ with pytest.importorskip(
                     if name.startswith(incomplete)
                 ]
 
-        @root_command.command()
+        @root_command.command(name="autocompletion-arg-cmd")
         @click.argument("handler", type=MyVar())
         def autocompletion_arg_cmd(handler):
             pass
 
-        completions = list(c.get_completions(Document("autocompletion-cmd ")))
+        completions = list(c.get_completions(Document("autocompletion-arg-cmd ")))
         assert {x.text for x in completions} == {"foo", "bar"}
 
 
@@ -77,7 +77,7 @@ def test_tuple_return_type_shell_complete_func():
             if i[1].startswith(incomplete)
         ]
 
-    @root_command.command()
+    @root_command.command(name="tuple-type-autocompletion-cmd")
     @click.argument("foo", shell_complete=return_type_tuple_shell_complete)
     def tuple_type_autocompletion_cmd(foo):
         pass

@@ -46,7 +46,7 @@ def test_tuple_return_type_shell_complete_func_click7():
             if i[1].startswith(incomplete)
         ]
 
-    @root_command.command()
+    @root_command.command(name="tuple-type-autocompletion-cmd")
     @click.argument("foo", autocompletion=return_type_tuple_shell_complete)
     def tuple_type_autocompletion_cmd(foo):
         pass
