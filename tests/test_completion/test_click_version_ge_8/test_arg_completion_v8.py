@@ -1,7 +1,11 @@
+from importlib.metadata import version as _get_version
+
 import click
 from click_repl import ClickCompleter
 from prompt_toolkit.document import Document
 import pytest
+
+_click_major = int(_get_version("click").split(".")[0])
 
 
 @click.group()
@@ -61,7 +65,7 @@ with pytest.importorskip(
 
 
 @pytest.mark.skipif(
-    click.__version__[0] < "8",
+    _click_major < 8,
     reason="click-v8 built-in shell complete is not available, so skipped",
 )
 def test_tuple_return_type_shell_complete_func():
