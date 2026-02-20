@@ -1,7 +1,11 @@
+from importlib.metadata import version as _get_version
+
 import click
 from click_repl import ClickCompleter
 from prompt_toolkit.document import Document
 import pytest
+
+_click_major = int(_get_version("click").split(".")[0])
 
 
 @click.group()
@@ -13,7 +17,7 @@ c = ClickCompleter(root_command, click.Context(root_command))
 
 
 @pytest.mark.skipif(
-    click.__version__[0] > "7",
+    _click_major >= 8,
     reason="click-v7 old autocomplete function is not available, so skipped",
 )
 def test_click7_autocomplete_option():

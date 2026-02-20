@@ -28,7 +28,7 @@ with pytest.importorskip(
                     if name.startswith(incomplete)
                 ]
 
-        @root_command.command()
+        @root_command.command(name="autocompletion-opt-cmd")
         @click.option("--handler", "-h", type=MyVar())
         def autocompletion_opt_cmd(handler):
             pass
