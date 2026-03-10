@@ -12,7 +12,7 @@ c = ClickCompleter(root_command, click.Context(root_command))
 
 
 def test_hidden_cmd():
-    @root_command.command(hidden=True)
+    @root_command.command(name="hidden-cmd", hidden=True)
     @click.option("--handler", "-h")
     def hidden_cmd(handler):
         pass
@@ -22,7 +22,7 @@ def test_hidden_cmd():
 
 
 def test_hidden_option():
-    @root_command.command()
+    @root_command.command(name="hidden-option-cmd")
     @click.option("--handler", "-h", hidden=True)
     def hidden_option_cmd(handler):
         pass
@@ -32,7 +32,7 @@ def test_hidden_option():
 
 
 def test_args_of_hidden_command():
-    @root_command.command(hidden=True)
+    @root_command.command(name="args-choices-hidden-cmd", hidden=True)
     @click.argument("handler1", type=click.Choice(("foo", "bar")))
     @click.option("--handler2", type=click.Choice(("foo", "bar")))
     def args_choices_hidden_cmd(handler):
@@ -55,7 +55,7 @@ def test_completion_multilevel_command():
     def root_group():
         pass
 
-    @root_group.group()
+    @root_group.group(name="first-level-command")
     def first_level_command():
         pass
 

@@ -11,7 +11,11 @@ from .core import ReplContext
 from .exceptions import ClickExit  # type: ignore[attr-defined]
 from .exceptions import CommandLineParserError, ExitReplException, InvalidGroupFormat
 from .globals_ import ISATTY, get_current_repl_ctx
-from .utils import _execute_internal_and_sys_cmds
+from .utils import (
+    _execute_internal_and_sys_cmds,
+    _get_protected_args,
+    _set_protected_args,
+)
 
 __all__ = ["bootstrap_prompt", "register_repl", "repl"]
 
@@ -147,12 +151,12 @@ def repl(
 
             try:
                 # The group command will dispatch based on args.
-                old_protected_args = group_ctx.protected_args
+                old_protected_args = _get_protected_args(group_ctx)
                 try:
-                    group_ctx.protected_args = args
+                    _set_protected_args(group_ctx, args)
                     group.invoke(group_ctx)
                 finally:
-                    group_ctx.protected_args = old_protected_args
+                    _set_protected_args(group_ctx, old_protected_args)
             except click.ClickException as e:
                 e.show()
             except (ClickExit, SystemExit):
