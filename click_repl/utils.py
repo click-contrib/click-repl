@@ -29,6 +29,20 @@ __all__ = [
 ]
 
 
+def _get_protected_args(ctx: click.Context) -> list[str]:
+    # In click >= 8.2, protected_args is a read-only property over _protected_args.
+    if hasattr(ctx, "_protected_args"):
+        return t.cast(list[str], getattr(ctx, "_protected_args"))
+    return ctx.protected_args
+
+
+def _set_protected_args(ctx: click.Context, args: list[str]) -> None:
+    if hasattr(ctx, "_protected_args"):
+        setattr(ctx, "_protected_args", args)
+    else:
+        ctx.protected_args = args
+
+
 def _resolve_context(args: list[str], ctx: click.Context) -> click.Context:
     """Produce the context hierarchy starting with the command and
     traversing the complete arguments. This only follows the commands,
@@ -49,7 +63,7 @@ def _resolve_context(args: list[str], ctx: click.Context) -> click.Context:
                     return ctx
 
                 ctx = cmd.make_context(name, args, parent=ctx, resilient_parsing=True)
-                args = ctx.protected_args + ctx.args
+                args = _get_protected_args(ctx) + ctx.args
             else:
                 while args:
                     name, cmd, args = command.resolve_command(ctx, args)
@@ -68,7 +82,7 @@ def _resolve_context(args: list[str], ctx: click.Context) -> click.Context:
                     args = sub_ctx.args
 
                 ctx = sub_ctx
-                args = [*sub_ctx.protected_args, *sub_ctx.args]
+                args = [*_get_protected_args(sub_ctx), *sub_ctx.args]
         else:
             break
 

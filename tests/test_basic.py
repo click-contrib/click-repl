@@ -13,7 +13,7 @@ c = ClickCompleter(root_command, click.Context(root_command))
 
 
 def test_arg_completion():
-    @root_command.command()
+    @root_command.command(name="arg-cmd")
     @click.argument("handler", type=click.Choice(("foo", "bar")))
     def arg_cmd(handler):
         pass
@@ -22,7 +22,7 @@ def test_arg_completion():
     assert {x.text for x in completions} == {"foo", "bar"}
 
 
-@root_command.command()
+@root_command.command(name="option-cmd")
 @click.option("--handler", "-h", type=click.Choice(("foo", "bar")), help="Demo option")
 def option_cmd(handler):
     pass
