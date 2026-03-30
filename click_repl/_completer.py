@@ -255,6 +255,8 @@ class ClickCompleter(Completer):
                     )
                     break
 
+                param_called = False
+
             elif isinstance(param, click.Argument):
                 choices.extend(
                     self._get_completion_from_params(
