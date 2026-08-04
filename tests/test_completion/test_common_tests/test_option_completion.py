@@ -38,6 +38,38 @@ def test_boolean_option():
     assert {x.text for x in completions} == {"true"}
 
 
+def test_flag_option_offers_no_value():
+    # A flag (is_flag=True) does not consume a value, so once it has been
+    # typed the completer must not offer true/false as if it needed one.
+    # See https://github.com/click-contrib/click-repl/issues/116
+    @root_command.command()
+    @click.argument("arg1", type=click.STRING)
+    @click.option("-b", "--some-option", "some_option", is_flag=True)
+    def flag_option(arg1, some_option):
+        pass
+
+    completions = list(c.get_completions(Document("flag-option -b ")))
+    assert {x.text for x in completions} == set()
+
+    completions = list(c.get_completions(Document("flag-option --some-option ")))
+    assert {x.text for x in completions} == set()
+
+
+def test_boolean_flag_with_secondary_opts_offers_no_value():
+    # Flags declared with a secondary option (--foo/--no-foo) are also flags
+    # and must not trigger true/false value completions.
+    @root_command.command()
+    @click.option("--shout/--no-shout", default=False)
+    def toggle_flag(shout):
+        pass
+
+    completions = list(c.get_completions(Document("toggle-flag --shout ")))
+    assert {x.text for x in completions} == set()
+
+    completions = list(c.get_completions(Document("toggle-flag --no-shout ")))
+    assert {x.text for x in completions} == set()
+
+
 def test_only_unused_with_unique_option():
     @root_command.command()
     @click.option("-u", type=click.BOOL)

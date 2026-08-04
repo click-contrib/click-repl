@@ -173,7 +173,13 @@ class ClickCompleter(Completer):
         choices: list[Completion] = []
         param_type = param.type
 
-        # shell_complete method for click.Choice is intorduced in click-v8
+        # Flags (is_flag=True, incl. secondary opts like --foo/--no-foo) do not
+        # consume a value, so we must not offer any value completions for them.
+        # See https://github.com/click-contrib/click-repl/issues/116
+        if getattr(param, "is_flag", False):
+            return choices
+
+        # shell_complete method for click.Choice was introduced in Click v8
         if not HAS_CLICK_V8 and isinstance(param_type, click.Choice):
             choices.extend(
                 self._get_completion_from_choices_click_le_7(param, incomplete)

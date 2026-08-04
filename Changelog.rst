@@ -4,6 +4,16 @@
  Change history
 ================
 
+.. _version-unreleased:
+
+Unreleased
+==========
+
+- Do not offer true/false value completions for boolean flags (``is_flag=True``,
+  including ``--foo/--no-foo`` style options), which previously inserted a value
+  into the positional-argument slot (#116).
+
+
 .. _version-0.3.0:
 
 0.3.0
