@@ -179,7 +179,7 @@ class ClickCompleter(Completer):
         if getattr(param, "is_flag", False):
             return choices
 
-        # shell_complete method for click.Choice is intorduced in click-v8
+        # shell_complete method for click.Choice was introduced in Click v8
         if not HAS_CLICK_V8 and isinstance(param_type, click.Choice):
             choices.extend(
                 self._get_completion_from_choices_click_le_7(param, incomplete)
