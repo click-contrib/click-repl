@@ -12,6 +12,8 @@ Unreleased
 - Do not offer true/false value completions for boolean flags (``is_flag=True``,
   including ``--foo/--no-foo`` style options), which previously inserted a value
   into the positional-argument slot (#116).
+- ``show_only_unused`` now also applies to arguments, so an argument that has
+  already been given is no longer completed again (#125).
 
 
 .. _version-0.3.0:
