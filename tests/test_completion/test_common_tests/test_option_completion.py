@@ -133,3 +133,19 @@ def test_shortest_only_mode():
 
     completions = list(c.get_completions(Document("shortest-only ")))
     assert {x.text for x in completions} == {"-f", "--foo", "-b", "--bar", "--foobar"}
+
+
+def test_shortest_only_at_empty_root_prompt(capsys):
+    @click.group()
+    @click.option("--verbose", "-v", is_flag=True)
+    def root(verbose):
+        pass
+
+    @root.command()
+    def child():
+        pass
+
+    completer = ClickCompleter(root, click.Context(root), shortest_only=True)
+    completions = list(completer.get_completions(Document("")))
+    assert {item.text for item in completions} == {"-v", "child"}
+    assert capsys.readouterr().out == ""
