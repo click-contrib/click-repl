@@ -266,14 +266,16 @@ class ClickCompleter(Completer):
                 # always accepts more values, so it is never hidden.
                 already_present = False
                 get_source = getattr(autocomplete_ctx, "get_parameter_source", None)
+                source = None
                 if get_source is not None:
                     try:
                         source = get_source(param.name)
                     except Exception:
-                        source = None
-                    already_present = getattr(source, "name", None) == "COMMANDLINE"
+                        pass
 
-                if not already_present:
+                if source is not None:
+                    already_present = getattr(source, "name", None) == "COMMANDLINE"
+                else:
                     already_present = autocomplete_ctx.params.get(param.name) not in (
                         None,
                         (),
