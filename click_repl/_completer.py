@@ -264,11 +264,22 @@ class ClickCompleter(Completer):
             elif isinstance(param, click.Argument):
                 # Show only unused arguments. A variadic argument (nargs=-1)
                 # always accepts more values, so it is never hidden.
-                already_present = autocomplete_ctx.params.get(param.name) not in (
-                    None,
-                    (),
-                    [],
-                )
+                already_present = False
+                get_source = getattr(autocomplete_ctx, "get_parameter_source", None)
+                if get_source is not None:
+                    try:
+                        source = get_source(param.name)
+                    except Exception:
+                        source = None
+                    already_present = getattr(source, "name", None) == "COMMANDLINE"
+
+                if not already_present:
+                    already_present = autocomplete_ctx.params.get(param.name) not in (
+                        None,
+                        (),
+                        [],
+                    )
+
                 if self.show_only_unused and already_present and param.nargs != -1:
                     continue
 
