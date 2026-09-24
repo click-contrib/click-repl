@@ -261,6 +261,8 @@ class ClickCompleter(Completer):
                     )
                     break
 
+                param_called = False
+
             elif isinstance(param, click.Argument):
                 # Show only unused arguments. A variadic argument (nargs=-1)
                 # always accepts more values, so it is never hidden.
