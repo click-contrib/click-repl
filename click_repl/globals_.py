@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from .core import ReplContext
 
 
-ISATTY = sys.stdin.isatty()
+ISATTY = sys.stdin is not None and sys.stdin.isatty()
 
 
 @overload
