@@ -4,6 +4,17 @@
  Change history
 ================
 
+
+.. _version-0.4.1:
+
+0.4.1
+======
+:release-date: 05 Oct, 2026
+:release-by: Asif Saif Uddin
+
+- Guard click-repl import when stdin is unavailable (#140)
+
+
 .. _version-0.4.0:
 
 0.4.0
