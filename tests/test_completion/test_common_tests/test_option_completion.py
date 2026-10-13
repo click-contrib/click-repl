@@ -41,33 +41,67 @@ def test_boolean_option():
 def test_flag_option_offers_no_value():
     # A flag (is_flag=True) does not consume a value, so once it has been
     # typed the completer must not offer true/false as if it needed one.
+    # It must, however, keep completing the command's other parameters
+    # instead of stopping.
     # See https://github.com/click-contrib/click-repl/issues/116
     @root_command.command()
-    @click.argument("arg1", type=click.STRING)
+    @click.argument("arg1", type=click.Choice(("alpha", "beta")))
     @click.option("-b", "--some-option", "some_option", is_flag=True)
     def flag_option(arg1, some_option):
         pass
 
-    completions = list(c.get_completions(Document("flag-option -b ")))
-    assert {x.text for x in completions} == set()
+    completions = {x.text for x in c.get_completions(Document("flag-option -b "))}
+    # No true/false value completion for the flag itself.
+    assert "true" not in completions and "false" not in completions
+    # Remaining argument still completes.
+    assert {"alpha", "beta"} <= completions
 
-    completions = list(c.get_completions(Document("flag-option --some-option ")))
-    assert {x.text for x in completions} == set()
+    completions = {x.text for x in c.get_completions(Document("flag-option --some-option "))}
+    assert "true" not in completions and "false" not in completions
+    assert {"alpha", "beta"} <= completions
 
 
 def test_boolean_flag_with_secondary_opts_offers_no_value():
     # Flags declared with a secondary option (--foo/--no-foo) are also flags
-    # and must not trigger true/false value completions.
+    # and must not trigger true/false value completions, while still letting
+    # the remaining parameters complete.
     @root_command.command()
+    @click.argument("arg1", type=click.Choice(("alpha", "beta")))
     @click.option("--shout/--no-shout", default=False)
-    def toggle_flag(shout):
+    def toggle_flag(arg1, shout):
         pass
 
-    completions = list(c.get_completions(Document("toggle-flag --shout ")))
-    assert {x.text for x in completions} == set()
+    completions = {x.text for x in c.get_completions(Document("toggle-flag --shout "))}
+    assert "true" not in completions and "false" not in completions
+    assert {"alpha", "beta"} <= completions
 
-    completions = list(c.get_completions(Document("toggle-flag --no-shout ")))
-    assert {x.text for x in completions} == set()
+    completions = {x.text for x in c.get_completions(Document("toggle-flag --no-shout "))}
+    assert "true" not in completions and "false" not in completions
+    assert {"alpha", "beta"} <= completions
+
+
+def test_completion_continues_after_boolean_flag():
+    # A flag consumes no value, so after it has been typed the completer must
+    # still offer the command's remaining options and arguments instead of
+    # stopping. See https://github.com/click-contrib/click-repl/issues/116
+    @root_command.command()
+    @click.argument("arg1", type=click.Choice(("foo", "bar")))
+    @click.option("--verbose", is_flag=True)
+    @click.option("--mode", type=click.Choice(("fast", "slow")))
+    def continue_after_flag(arg1, verbose, mode):
+        pass
+
+    # Remaining options are still offered after the flag.
+    completions = list(c.get_completions(Document("continue-after-flag --verbose --")))
+    assert {x.text for x in completions} >= {"--verbose", "--mode"}
+
+    # The positional argument still completes after the flag.
+    completions = list(c.get_completions(Document("continue-after-flag --verbose ")))
+    assert {"foo", "bar"} <= {x.text for x in completions}
+
+    # Still works after more than one flag.
+    completions = list(c.get_completions(Document("continue-after-flag --verbose ba")))
+    assert {x.text for x in completions} == {"bar"}
 
 
 def test_only_unused_with_unique_option():

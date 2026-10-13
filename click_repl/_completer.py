@@ -241,8 +241,12 @@ class ClickCompleter(Completer):
                 for option in opts:
                     # We want to make sure if this parameter was called
                     # If we are inside a parameter that was called, we want to show only
-                    # relevant choices
-                    if option in current_args:  # noqa: E203
+                    # relevant choices. A boolean flag consumes no value, so it must
+                    # not short-circuit completion of the parameters that follow it.
+                    # See https://github.com/click-contrib/click-repl/issues/116
+                    if option in current_args and not getattr(  # noqa: E203
+                        param, "is_flag", False
+                    ):
                         param_called = True
                         break
 
