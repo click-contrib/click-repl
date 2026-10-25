@@ -6,11 +6,16 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14', 'pypy-3.11']
+        include:
+          # Python 3.9 has no setup-python build for Ubuntu 26.04.
+          - os: ubuntu-latest
+            python-version: '3.9'
+            runner: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v3

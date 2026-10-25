@@ -4,6 +4,12 @@
  Change history
 ================
 
+Unreleased
+==========
+
+- Show docstring-derived short help in command completions, matching Click's
+  help output (#114).
+
 
 .. _version-0.4.1:
 
