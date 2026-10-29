@@ -14,6 +14,13 @@ from .exceptions import CommandLineParserError, ExitReplException
 T = t.TypeVar("T")
 InternalCommandCallback: TypeAlias = Callable[[], None]
 
+# Click 8.2 merged MultiCommand into Group and deprecated MultiCommand, which
+# Click 9 removes. Before 8.2, CommandCollection is a MultiCommand but not a Group.
+if t.TYPE_CHECKING or issubclass(click.CommandCollection, click.Group):
+    _MultiCommand = click.Group
+else:  # pragma: no cover
+    _MultiCommand = click.MultiCommand
+
 
 __all__ = [
     "_execute_internal_and_sys_cmds",
@@ -55,7 +62,7 @@ def _resolve_context(args: list[str], ctx: click.Context) -> click.Context:
     while args:
         command = ctx.command
 
-        if isinstance(command, click.MultiCommand):
+        if isinstance(command, _MultiCommand):
             if not command.chain:
                 name, cmd, args = command.resolve_command(ctx, args)
 

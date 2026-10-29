@@ -12,6 +12,7 @@ from .exceptions import ClickExit  # type: ignore[attr-defined]
 from .exceptions import CommandLineParserError, ExitReplException, InvalidGroupFormat
 from .globals_ import ISATTY, get_current_repl_ctx
 from .utils import (
+    _MultiCommand,
     _execute_internal_and_sys_cmds,
     _get_protected_args,
     _set_protected_args,
@@ -21,14 +22,14 @@ __all__ = ["bootstrap_prompt", "register_repl", "repl"]
 
 
 def bootstrap_prompt(
-    group: click.MultiCommand,
+    group: click.Group,
     prompt_kwargs: dict[str, Any],
     ctx: click.Context,
 ) -> dict[str, Any]:
     """
     Bootstrap prompt_toolkit kwargs or use user defined values.
 
-    :param group: click.MultiCommand object
+    :param group: click.Group object
     :param prompt_kwargs: The user specified prompt kwargs.
     """
 
@@ -63,11 +64,11 @@ def repl(
     # Switching to the parent context that has a Group as its command
     # as a Group acts as a CLI for all of its subcommands
     if old_ctx.parent is not None and not isinstance(
-        old_ctx.command, click.MultiCommand
+        old_ctx.command, _MultiCommand
     ):
         group_ctx = old_ctx.parent
 
-    group = cast(click.MultiCommand, group_ctx.command)
+    group = cast(click.Group, group_ctx.command)
 
     # An Optional click.Argument in the CLI Group, that has no value
     # will consume the first word from the REPL input, causing issues in
