@@ -9,7 +9,7 @@ import click
 from prompt_toolkit.completion import CompleteEvent, Completer, Completion
 from prompt_toolkit.document import Document
 
-from .utils import _resolve_context, split_arg_string
+from .utils import _MultiCommand, _resolve_context, split_arg_string
 
 __all__ = ["ClickCompleter"]
 
@@ -34,7 +34,7 @@ class ClickCompleter(Completer):
 
     def __init__(
         self,
-        cli: click.MultiCommand,
+        cli: click.Group,
         ctx: click.Context,
         show_only_unused: bool = False,
         shortest_only: bool = False,
@@ -335,7 +335,7 @@ class ClickCompleter(Completer):
                 )
             )
 
-            if isinstance(self.ctx_command, click.MultiCommand):
+            if isinstance(self.ctx_command, _MultiCommand):
                 incomplete_lower = incomplete.lower()
 
                 for name in self.ctx_command.list_commands(self.parsed_ctx):
