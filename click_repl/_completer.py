@@ -348,7 +348,7 @@ class ClickCompleter(Completer):
                             Completion(
                                 name,
                                 -len(incomplete),
-                                display_meta=getattr(command, "short_help", ""),
+                                display_meta=command.get_short_help_str(),
                             )
                         )
 
