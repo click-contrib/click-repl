@@ -11,7 +11,7 @@ Unreleased
 ==========
 
 - Fix completion stopping after a boolean flag; remaining options and
-  arguments now complete (#116)
+  arguments now complete (#116).
 
 
 .. _version-0.4.1:
