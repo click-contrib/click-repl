@@ -243,3 +243,5 @@ def handle_internal_commands(command: str) -> None:
     target = _get_registered_target(command[1:], default=None)
     if target:
         target()
+    else:
+        click.echo(f"No such internal command: {command}")

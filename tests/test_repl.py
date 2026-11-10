@@ -138,6 +138,24 @@ def test_group_with_multiple_optional_args(capsys, args, expected):
     assert capsys.readouterr().out.replace("\r\n", "\n") == expected
 
 
+def test_unknown_internal_command_shows_error(capsys):
+    @click.group(invoke_without_command=True)
+    @click.pass_context
+    def cli(ctx):
+        if ctx.invoked_subcommand is None:
+            click_repl.repl(ctx)
+
+    @cli.command()
+    def foo():
+        print("Foo!")
+
+    with mock_stdin(":nope\n"):
+        with pytest.raises(SystemExit):
+            cli(args=[], prog_name="test_unknown_internal_command")
+
+    assert "nope" in capsys.readouterr().out.replace("\r\n", "\n")
+
+
 def test_inputs(capsys):
     @click.group(invoke_without_command=True)
     @click.pass_context
